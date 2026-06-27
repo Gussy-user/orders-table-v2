@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Заказ {{ order.order_number }}{% endblock %}
+{% block content %}
+<h2>Заказ №{{ order.order_number }}</h2>
+
+<ul class="list-group mb-4">
+    <li class="list-group-item"><strong>Клиент:</strong>
+        <a href="{{ url_for('main.client_detail', client_id=order.client.id) }}">{{ order.client.name }}</a>
+        ({{ order.client.phone }})
+    </li>
+    <li class="list-group-item"><strong>Статус:</strong>
+        <span class="badge status-badge status-order-{{ order.status.name|lower|replace(' ', '-') }}">
+            {{ order.status.name }}
+        </span>
+    </li>
+    <li class="list-group-item"><strong>Создан:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</li>
+    <li class="list-group-item"><strong>Сумма:</strong> {{ order.total_price|round(2) }} ₽</li>
+</ul>
+
+<h4>Позиции заказа</h4>
+<table class="table table-sm align-middle">
+    <thead class="table-light"><tr>
+        <th>#</th><th>Деталь</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th>Итого (₽)</th>
+    </tr></thead>
+    <tbody>
+    {% for item in order.items %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ item.part_name }}</td>
+            <td>
+                {% if item.article %}
+                    <a href="#" class="article-link" data-article="{{ item.article }}"
+                       title="Найти в Google">{{ item.article }}</a>
+                {% else %}—{% endif %}
+            </td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price|round(2) }}</td>
+            <td class="fw-bold">{{ item.total|round(2) }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+<a href="{{ url_for('orders.order_edit', order_id=order.id) }}" class="btn btn-primary">Редактировать</a>
+<a href="{{ url_for('main.client_invoice_pdf', client_id=order.client.id, order_id=order.id) }}" class="btn btn-info text-white" target="_blank">📄 Расчётный лист (PDF)</a>
+<a href="{{ url_for('orders.orders_active') }}" class="btn btn-secondary">← Назад</a>
+{% endblock %}

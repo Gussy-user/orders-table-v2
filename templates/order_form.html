@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{% if order %}Редактировать заказ{% else %}Создать заказ{% endif %}{% endblock %}
+{% block content %}
+<h2>{% if order %}Редактировать заказ №{{ order.order_number }}{% else %}Создать новый заказ{% endif %}</h2>
+
+<form method="post">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label" for="client_id">Клиент</label>
+            <select class="form-select" id="client_id" name="client_id" required>
+                <option value="">— Выберите клиента —</option>
+                {% for cl in clients %}
+                    <option value="{{ cl.id }}"
+                        {% if (preselected_client_id == cl.id) or (order and order.client_id == cl.id) %}selected{% endif %}>
+                        {{ cl.name }} ({{ cl.phone }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="status_id">Статус заказа</label>
+            <select class="form-select" id="status_id" name="status_id" required>
+                {% for st in statuses %}
+                    <option value="{{ st.id }}"
+                        {% if order and order.status_id == st.id %}selected{% endif %}>{{ st.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <h5>Позиции заказа</h5>
+    <table class="table table-sm" id="items-table">
+        <thead class="table-light"><tr>
+            <th>Название детали</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th></th>
+        </tr></thead>
+        <tbody>
+            {% if order and order.items %}
+                {% for item in order.items %}
+                <tr>
+                    <td><input type="text" name="part_name" class="form-control" value="{{ item.part_name }}" required></td>
+                    <td><input type="text" name="article" class="form-control" value="{{ item.article or '' }}" placeholder="Артикул"></td>
+                    <td><input type="number" name="quantity" class="form-control" min="1" value="{{ item.quantity }}" required></td>
+                    <td><input type="number" step="0.01" name="price" class="form-control" value="{{ item.price }}" required></td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger remove-item">✖️</button></td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td><input type="text" name="part_name" class="form-control" placeholder="Название детали" required></td>
+                    <td><input type="text" name="article" class="form-control" placeholder="Артикул"></td>
+                    <td><input type="number" name="quantity" class="form-control" min="1" value="1" required></td>
+                    <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required></td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger remove-item">✖️</button></td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-outline-secondary mb-3" id="add-item">+ Добавить позицию</button>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">
+            {% if order %}Сохранить изменения{% else %}Создать заказ{% endif %}
+        </button>
+        <a href="{{ url_for('orders.orders_active') }}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('add-item').addEventListener('click', function () {
+        const tbody = document.querySelector('#items-table tbody');
+        const row = `
+        <tr>
+            <td><input type="text" name="part_name" class="form-control" placeholder="Название детали" required></td>
+            <td><input type="text" name="article" class="form-control" placeholder="Артикул"></td>
+            <td><input type="number" name="quantity" class="form-control" min="1" value="1" required></td>
+            <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required></td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger remove-item">✖️</button></td>
+        </tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('remove-item')) {
+            e.target.closest('tr').remove();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Склад{% endblock %}
+{% block content %}
+<h2>Склад (детали)</h2>
+
+<a href="{{ url_for('warehouse.part_add') }}" class="btn btn-success mb-3">+ Добавить деталь</a>
+
+<table class="table table-hover table-sm align-middle">
+    <thead class="table-light"><tr>
+        <th>#</th><th>Наименование</th><th>Цена (₽)</th><th>Местоположение</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for p in parts %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.price|round(2) }}</td>
+            <td>{{ p.location }}</td>
+            <td>
+                <a href="{{ url_for('warehouse.part_edit', part_id=p.id) }}" class="btn btn-sm btn-outline-primary">✏️</a>
+                <form method="post" action="{{ url_for('warehouse.part_delete', part_id=p.id) }}"
+                      style="display:inline;" onsubmit="return confirm('Удалить деталь?');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">🗑️</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5" class="text-muted">Деталей нет.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

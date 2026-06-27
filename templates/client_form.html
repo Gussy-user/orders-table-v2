@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% if client %}
+    {% set page_title = "Редактировать клиента" %}
+{% else %}
+    {% set page_title = "Новый клиент" %}
+{% endif %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label" for="name">ФИО</label>
+        <input type="text" class="form-control" id="name" name="name"
+               value="{{ client.name if client else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="phone">Телефон</label>
+        <input type="tel" class="form-control" id="phone" name="phone"
+               value="{{ client.phone if client else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="status_id">Статус</label>
+        <select class="form-select" id="status_id" name="status_id">
+            {% for st in statuses %}
+                <option value="{{ st.id }}"
+                    {% if client and client.status_id == st.id %}selected{% endif %}>
+                    {{ st.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <h5>Дополнительные атрибуты</h5>
+    {% if attributes %}
+        {% for attr in attributes %}
+            <div class="mb-2">
+                <label class="form-label" for="attr_{{ attr.id }}">{{ attr.name }}</label>
+                <input type="text" class="form-control"
+                       id="attr_{{ attr.id }}" name="attr_{{ attr.id }}"
+                       value="{{ client_attrs[attr.id]|default('') }}">
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Атрибутов пока нет. Добавьте их в разделе «Атрибуты».</p>
+    {% endif %}
+
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

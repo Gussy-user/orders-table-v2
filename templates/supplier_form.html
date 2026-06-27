@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if supplier %}Редактировать поставщика{% else %}Новый поставщик{% endif %}{% endblock %}
+{% block content %}
+<h2>{% if supplier %}Редактировать поставщика{% else %}Новый поставщик{% endif %}</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label" for="name">Название *</label>
+        <input type="text" class="form-control" id="name" name="name"
+               value="{{ supplier.name if supplier else '' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="org_number">ИНН / ОГРН</label>
+        <input type="text" class="form-control" id="org_number" name="org_number"
+               value="{{ supplier.org_number if supplier and supplier.org_number else '' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="address">Адрес</label>
+        <input type="text" class="form-control" id="address" name="address"
+               value="{{ supplier.address if supplier and supplier.address else '' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="work_time">Часы работы</label>
+        <input type="text" class="form-control" id="work_time" name="work_time"
+               value="{{ supplier.work_time if supplier and supplier.work_time else '' }}"
+               placeholder="Пн-Пт 9:00-18:00">
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="phone">Телефон</label>
+        <input type="tel" class="form-control" id="phone" name="phone"
+               value="{{ supplier.phone if supplier and supplier.phone else '' }}">
+    </div>
+    <button type="submit" class="btn btn-success">
+        {% if supplier %}Сохранить{% else %}Добавить{% endif %}
+    </button>
+    <a href="{{ url_for('suppliers.list_suppliers') }}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

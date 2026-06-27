@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Статистика{% endblock %}
+{% block content %}
+<h2>Статистика за {{ today_str }}</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Клиентов сегодня</h5>
+                <p class="display-6">{{ count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Общая сумма заказов</h5>
+                <p class="display-6">{{ total|round(2) }} ₽</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Заказы по статусу (за сегодня)</h4>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Активные (В работе)</h5>
+                <p class="display-6">{{ active_today|default(0) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success mb-3 text-white">
+            <div class="card-body">
+                <h5 class="card-title">Успешные (Выдан)</h5>
+                <p class="display-6">{{ done_today|default(0) }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger mb-3 text-white">
+            <div class="card-body">
+                <h5 class="card-title">Отменённые</h5>
+                <p class="display-6">{{ cancelled_today|default(0) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if clients %}
+<h4 class="mt-4">Клиенты, созданные сегодня</h4>
+<table class="table table-sm table-hover align-middle">
+    <thead class="table-light"><tr>
+        <th>ФИО</th><th>Телефон</th><th>Сумма (₽)</th><th>Статус</th>
+    </tr></thead>
+    <tbody>
+    {% for c in clients %}
+        <tr>
+            <td><a href="{{ url_for('main.client_detail', client_id=c.id) }}">{{ c.name }}</a></td>
+            <td>{{ c.phone }}</td>
+            <td>{{ c.total_price|round(2) }}</td>
+            <td>{{ c.status.name }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">Сегодня ещё нет записей.</p>
+{% endif %}
+{% endblock %}

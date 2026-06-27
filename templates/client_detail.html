@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Клиент {{ client.name }}{% endblock %}
+{% block content %}
+<h2>Клиент: {{ client.name }}</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <ul class="list-group">
+            <li class="list-group-item"><strong>Телефон:</strong> {{ client.phone }}</li>
+            <li class="list-group-item"><strong>Статус:</strong>
+                <span class="badge status-badge status-client-{{ client.status.name|lower|replace(' ', '-') }}">
+                    {{ client.status.name }}
+                </span>
+            </li>
+            <li class="list-group-item"><strong>Создан:</strong> {{ client.created_at.strftime('%d.%m.%Y %H:%M') }}</li>
+            <li class="list-group-item"><strong>Сумма заказов:</strong> {{ client.total_price|round(2) }} ₽</li>
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <h5>Автомобили</h5>
+        <table class="table table-sm">
+            <thead class="table-light"><tr><th>Марка</th><th>Модель</th><th>VIN</th><th>Год</th><th></th></tr></thead>
+            <tbody>
+                {% for car in client.cars %}
+                    <tr>
+                        <td>{{ car.make }}</td>
+                        <td>{{ car.model }}</td>
+                        <td>{{ car.vin }}</td>
+                        <td>{{ car.year|default('-') }}</td>
+                        <td>
+                            <a href="{{ url_for('main.car_edit', car_id=car.id) }}" class="btn btn-sm btn-outline-primary">✏️</a>
+                            <form method="post" action="{{ url_for('main.car_delete', car_id=car.id) }}" style="display:inline;" onsubmit="return confirm('Удалить автомобиль?');">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted">Автомобилей нет.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('main.car_add', client_id=client.id) }}" class="btn btn-success btn-sm mt-2">+ Добавить автомобиль</a>
+    </div>
+</div>
+
+<h4>Заказы клиента</h4>
+{% if client.orders %}
+<table class="table table-hover table-sm align-middle">
+    <thead class="table-light"><tr>
+        <th>№ заказа</th><th>Статус</th><th>Сумма (₽)</th><th>Дата</th><th></th>
+    </tr></thead>
+    <tbody>
+        {% for order in client.orders %}
+            <tr>
+                <td><a href="{{ url_for('orders.order_detail', order_id=order.id) }}">{{ order.order_number }}</a></td>
+                <td><span class="badge status-badge status-order-{{ order.status.name|lower|replace(' ', '-') }}">{{ order.status.name }}</span></td>
+                <td class="fw-bold text-end">{{ order.total_price|round(2) }}</td>
+                <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('orders.toggle_archive', order_id=order.id) }}" style="display:inline;">
+                        <button class="btn btn-sm btn-outline-{% if not order.archived %}warning{% else %}success{% endif %}" type="submit">
+                            {% if not order.archived %}🗄️{% else %}♻️{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">У клиента пока нет заказов.</p>
+{% endif %}
+
+<h4>Атрибуты клиента</h4>
+{% if attributes %}
+<table class="table table-sm align-middle">
+    <thead class="table-light"><tr><th>Атрибут</th><th>Значение</th></tr></thead>
+    <tbody>
+        {% for attr in attributes %}
+            <tr>
+                <td>{{ attr.name }}</td>
+                <td>
+                    <form method="post"
+                          action="{{ url_for('main.client_attribute_update', client_id=client.id, attr_id=attr.id) }}"
+                          class="d-flex">
+                        <input type="text" name="value"
+                               class="form-control form-control-sm me-2"
+                               value="{{ client_attrs[attr.id]|default('') }}">
+                        <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">Атрибутов пока нет. Добавьте их в разделе «Атрибуты».</p>
+{% endif %}
+
+<hr>
+<a href="{{ url_for('main.client_edit', client_id=client.id) }}" class="btn btn-primary">Редактировать клиента</a>
+<a href="{{ url_for('main.client_add') }}" class="btn btn-success">Новый клиент</a>
+<a href="{{ url_for('main.client_invoice_pdf', client_id=client.id) }}" class="btn btn-info text-white" target="_blank">📄 Скачать расчётный лист (PDF)</a>
+{% endblock %}

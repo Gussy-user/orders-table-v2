@@ -1,0 +1,32 @@
+/* static/css/style.css */
+body {
+    padding-bottom: 3rem;
+}
+
+.status-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Клиентские статусы */
+.status-client-in-work   { background-color: #0d6efd; }
+.status-client-done      { background-color: #198754; }
+.status-client-delay     { background-color: #dc3545; }
+
+/* Заказы */
+.status-order-new        { background-color: #0d6efd; }
+.status-order-progress   { background-color: #ffc107; }
+.status-order-done       { background-color: #198754; }
+.status-order-cancel     { background-color: #dc3545; }
+
+/* Кликабельные артикулы */
+.article-link {
+    color: #0d6efd;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}
+
+.article-link:hover {
+    color: #dc3545;
+}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Поставщики{% endblock %}
+{% block content %}
+<h2>Поставщики</h2>
+
+<a href="{{ url_for('suppliers.add_supplier') }}" class="btn btn-success mb-3">+ Добавить поставщика</a>
+
+<table class="table table-hover table-sm align-middle">
+    <thead class="table-light"><tr>
+        <th>#</th><th>Название</th><th>ИНН/ОГРН</th><th>Адрес</th><th>Часы работы</th><th>Телефон</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for s in suppliers %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.org_number or '—' }}</td>
+            <td>{{ s.address or '—' }}</td>
+            <td>{{ s.work_time or '—' }}</td>
+            <td>{{ s.phone or '—' }}</td>
+            <td>
+                <a href="{{ url_for('suppliers.edit_supplier', supplier_id=s.id) }}" class="btn btn-sm btn-outline-primary">✏️</a>
+                <form method="post" action="{{ url_for('suppliers.delete_supplier', supplier_id=s.id) }}"
+                      style="display:inline;" onsubmit="return confirm('Удалить поставщика?');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">🗑️</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="7" class="text-muted">Поставщиков нет.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

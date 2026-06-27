@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Настройки{% endblock %}
+{% block content %}
+<h2>Настройки</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Данные для расчётного листа</h5>
+        <form method="post" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="employee">Сотрудник</label>
+                <input type="text" class="form-control" id="employee" name="employee"
+                       value="{{ employee }}" placeholder="Иванов И.И.">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="shop_address">Адрес магазина</label>
+                <input type="text" class="form-control" id="shop_address" name="shop_address"
+                       value="{{ shop_address }}" placeholder="г. Москва, ул. Примерная, д. 1">
+            </div>
+            <div class="col-md-8">
+                <label class="form-label" for="backup_dir">Папка для бэкапов (CSV)</label>
+                <input type="text" class="form-control" id="backup_dir" name="backup_dir"
+                       value="{{ backup_dir }}" placeholder="Оставьте пустым для папки программы">
+                <div class="form-text">
+                    Если пусто — CSV сохраняется рядом с программой.
+                    Укажите полный путь для сохранения в другую папку.
+                </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100">Сохранить</button>
+            </div>
+        </form>
+
+        {% if backup_dir %}
+        <div class="mt-3">
+            <strong>Текущая папка:</strong>
+            <code>{{ backup_dir }}</code>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Ручной экспорт CSV</h5>
+        <p class="card-text">Экспортировать все заказы в CSV-файл прямо сейчас.</p>
+        <form method="post" action="{{ url_for('main.export_csv_manual') }}">
+            <button type="submit" class="btn btn-primary">📥 Экспортировать CSV</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

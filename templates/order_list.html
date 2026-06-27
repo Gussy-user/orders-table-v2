@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{% if archived %}Архив заказов{% else %}Активные заказы{% endif %}{% endblock %}
+
+{% block content %}
+<h2>{% if archived %}Архив заказов{% else %}Активные заказы{% endif %}</h2>
+
+<form class="row g-3 mb-3" method="get"
+      action="{{ url_for('orders.orders_active' if not archived else 'orders.orders_archive') }}">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Поиск по номеру, клиенту…">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Найти</button>
+    </div>
+</form>
+
+<div class="mb-3">
+    <a href="{{ url_for('orders.order_add') }}" class="btn btn-success">+ Новый заказ</a>
+</div>
+
+<table class="table table-hover table-sm align-middle">
+    <thead class="table-light"><tr>
+        <th>#</th><th>Номер</th><th>Клиент</th><th>Детали</th><th>Статус</th><th>Сумма (₽)</th><th>Дата</th><th>Действия</th>
+    </tr></thead>
+    <tbody>
+    {% for o in orders %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td><a href="{{ url_for('orders.order_detail', order_id=o.id) }}">{{ o.order_number }}</a></td>
+            <td><a href="{{ url_for('main.client_detail', client_id=o.client.id) }}">{{ o.client.name }}</a></td>
+            <td>
+                {% for item in o.items %}
+                    <span class="d-block">
+                        {{ item.part_name }}
+                        {% if item.article %}
+                            <a href="#" class="article-link" data-article="{{ item.article }}"
+                               title="Найти в Google">({{ item.article }})</a>
+                        {% endif %}
+                        x{{ item.quantity }}
+                    </span>
+                {% endfor %}
+            </td>
+            <td>
+                <form method="post" action="{{ url_for('orders.order_status', order_id=o.id) }}" style="display:inline;">
+                    <select name="status_id" class="form-select form-select-sm d-inline-block w-auto"
+                            onchange="this.form.submit()">
+                        {% for st in statuses %}
+                            <option value="{{ st.id }}" {% if o.status_id == st.id %}selected{% endif %}>{{ st.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </td>
+            <td class="fw-bold text-end">{{ o.total_price|round(2) }}</td>
+            <td>{{ o.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>
+                <form method="post" action="{{ url_for('orders.toggle_archive', order_id=o.id) }}" style="display:inline;">
+                    <button class="btn btn-sm btn-outline-{% if not o.archived %}warning{% else %}success{% endif %}"
+                            type="submit" title="{% if not o.archived %}В архив{% else %}В активные{% endif %}">
+                        {% if not o.archived %}🗄️{% else %}♻️{% endif %}
+                    </button>
+                </form>
+                <form method="post" action="{{ url_for('orders.order_delete', order_id=o.id) }}"
+                      style="display:inline;" class="confirm-delete">
+                    <button class="btn btn-sm btn-outline-danger" type="submit" title="Удалить">🗑️</button>
+                </form>
+                <a href="{{ url_for('main.client_invoice_pdf', client_id=o.client.id, order_id=o.id) }}"
+                   class="btn btn-sm btn-outline-info" title="Расчётный лист PDF" target="_blank">📄</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="8" class="text-center"><em>Заказов нет.</em></td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Передаём статусы в JS для селекта
+    window.__statuses = [
+        {% for st in statuses %}
+            { id: {{ st.id }}, name: "{{ st.name }}" }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+</script>
+{% endblock %}
