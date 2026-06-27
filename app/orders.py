@@ -33,6 +33,7 @@ def order_add():
         try:
             client_id = int(request.form["client_id"])
             status_id = int(request.form["status_id"])
+            payment_status = request.form.get("payment_status", "Не оплачен")
 
             now = datetime.now()
             base = now.strftime("ORD-%Y%m%d")
@@ -43,24 +44,30 @@ def order_add():
                 client_id=client_id,
                 status_id=status_id,
                 order_number=order_number,
+                payment_status=payment_status,
             )
             db.session.add(order)
             db.session.flush()
 
+            part_ids = request.form.getlist("part_id")
             part_names = request.form.getlist("part_name")
             articles = request.form.getlist("article")
             quantities = request.form.getlist("quantity")
             prices = request.form.getlist("price")
+            item_statuses = request.form.getlist("item_status")
 
-            for name, art, qty, price in zip(part_names, articles, quantities, prices):
+            for i, name in enumerate(part_names):
                 if not name.strip():
                     continue
+                part_id = int(part_ids[i]) if part_ids[i] else None
                 item = OrderItem(
                     order_id=order.id,
+                    part_id=part_id,
                     part_name=name.strip(),
-                    article=art.strip() if art else "",
-                    quantity=int(qty) if qty else 1,
-                    price=float(price) if price else 0,
+                    article=articles[i].strip() if articles[i] else "",
+                    quantity=int(quantities[i]) if quantities[i] else 1,
+                    price=float(prices[i]) if prices[i] else 0,
+                    item_status=item_statuses[i] if i < len(item_statuses) else "Ожидается",
                 )
                 db.session.add(item)
 
@@ -75,10 +82,11 @@ def order_add():
 
     clients = Client.query.all()
     statuses = OrderStatus.query.all()
+    parts = Part.query.order_by(Part.name).all()
     client_id = request.args.get("client_id", type=int)
     return render_template(
         "order_form.html",
-        clients=clients, statuses=statuses,
+        clients=clients, statuses=statuses, parts=parts,
         preselected_client_id=client_id, order=None,
     )
 
@@ -91,23 +99,29 @@ def order_edit(order_id):
         try:
             order.client_id = int(request.form["client_id"])
             order.status_id = int(request.form["status_id"])
+            order.payment_status = request.form.get("payment_status", order.payment_status)
 
             OrderItem.query.filter_by(order_id=order.id).delete()
 
+            part_ids = request.form.getlist("part_id")
             part_names = request.form.getlist("part_name")
             articles = request.form.getlist("article")
             quantities = request.form.getlist("quantity")
             prices = request.form.getlist("price")
+            item_statuses = request.form.getlist("item_status")
 
-            for name, art, qty, price in zip(part_names, articles, quantities, prices):
+            for i, name in enumerate(part_names):
                 if not name.strip():
                     continue
+                part_id = int(part_ids[i]) if part_ids[i] else None
                 item = OrderItem(
                     order_id=order.id,
+                    part_id=part_id,
                     part_name=name.strip(),
-                    article=art.strip() if art else "",
-                    quantity=int(qty) if qty else 1,
-                    price=float(price) if price else 0,
+                    article=articles[i].strip() if articles[i] else "",
+                    quantity=int(quantities[i]) if quantities[i] else 1,
+                    price=float(prices[i]) if prices[i] else 0,
+                    item_status=item_statuses[i] if i < len(item_statuses) else "Ожидается",
                 )
                 db.session.add(item)
 
@@ -121,9 +135,10 @@ def order_edit(order_id):
 
     clients = Client.query.all()
     statuses = OrderStatus.query.all()
+    parts = Part.query.order_by(Part.name).all()
     return render_template(
         "order_form.html",
-        clients=clients, statuses=statuses,
+        clients=clients, statuses=statuses, parts=parts,
         order=order, preselected_client_id=order.client_id,
     )
 

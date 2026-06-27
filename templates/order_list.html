@@ -20,7 +20,7 @@
 
 <table class="table table-hover table-sm align-middle">
     <thead class="table-light"><tr>
-        <th>#</th><th>Номер</th><th>Клиент</th><th>Детали</th><th>Статус</th><th>Сумма (₽)</th><th>Дата</th><th>Действия</th>
+        <th>#</th><th>Номер</th><th>Клиент</th><th>Детали</th><th>Статус</th><th>Оплата</th><th>Сумма (₽)</th><th>Дата</th><th>Действия</th>
     </tr></thead>
     <tbody>
     {% for o in orders %}
@@ -50,6 +50,11 @@
                     </select>
                 </form>
             </td>
+            <td>
+                <span class="badge status-badge payment-{{ o.payment_status|lower|replace(' ', '-') }}">
+                    {{ o.payment_status }}
+                </span>
+            </td>
             <td class="fw-bold text-end">{{ o.total_price|round(2) }}</td>
             <td>{{ o.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
             <td>
@@ -68,7 +73,7 @@
             </td>
         </tr>
     {% else %}
-        <tr><td colspan="8" class="text-center"><em>Заказов нет.</em></td></tr>
+        <tr><td colspan="9" class="text-center"><em>Заказов нет.</em></td></tr>
     {% endfor %}
     </tbody>
 </table>

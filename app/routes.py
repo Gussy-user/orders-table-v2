@@ -213,36 +213,50 @@ def client_attribute_update(client_id, attr_id):
 
 
 # ----------------------------------------------------------------------
-# Статусы клиентов
+# Статусы клиентов и заказов
 # ----------------------------------------------------------------------
 @bp.route("/statuses", methods=["GET", "POST"])
 def status_list():
     if request.method == "POST":
         action = request.form.get("action")
+        scope = request.form.get("scope", "client")
         try:
             if action == "add":
                 name = request.form["name"].strip()
                 if not name:
                     raise ValueError("Имя статуса обязательно")
-                if Status.query.filter_by(name=name).first():
-                    raise ValueError("Статус уже существует")
-                db.session.add(Status(name=name))
+                if scope == "order":
+                    if OrderStatus.query.filter_by(name=name).first():
+                        raise ValueError("Статус уже существует")
+                    db.session.add(OrderStatus(name=name))
+                else:
+                    if Status.query.filter_by(name=name).first():
+                        raise ValueError("Статус уже существует")
+                    db.session.add(Status(name=name))
                 db.session.commit()
                 flash(f"Статус «{name}» добавлен", "success")
             elif action == "rename":
                 status_id = int(request.form["status_id"])
                 new_name = request.form["new_name"].strip()
-                status = Status.query.get_or_404(status_id)
                 if not new_name:
                     raise ValueError("Новое имя пустое")
+                if scope == "order":
+                    status = OrderStatus.query.get_or_404(status_id)
+                else:
+                    status = Status.query.get_or_404(status_id)
                 status.name = new_name
                 db.session.commit()
                 flash("Статус переименован", "success")
             elif action == "delete":
                 status_id = int(request.form["status_id"])
-                status = Status.query.get_or_404(status_id)
-                if Client.query.filter_by(status_id=status.id).first():
-                    raise ValueError("Статус уже используется клиентами")
+                if scope == "order":
+                    status = OrderStatus.query.get_or_404(status_id)
+                    if Order.query.filter_by(status_id=status.id).first():
+                        raise ValueError("Статус уже используется заказами")
+                else:
+                    status = Status.query.get_or_404(status_id)
+                    if Client.query.filter_by(status_id=status.id).first():
+                        raise ValueError("Статус уже используется клиентами")
                 db.session.delete(status)
                 db.session.commit()
                 flash("Статус удалён", "info")
@@ -251,7 +265,8 @@ def status_list():
             flash(f"Ошибка со статусом: {e}", "danger")
         return redirect(url_for("main.status_list"))
     statuses = Status.query.all()
-    return render_template("status_list.html", statuses=statuses)
+    order_statuses = OrderStatus.query.all()
+    return render_template("status_list.html", statuses=statuses, order_statuses=order_statuses)
 
 
 @bp.route("/status/<int:status_id>/edit", methods=["GET", "POST"])
@@ -452,3 +467,25 @@ def client_invoice_pdf(client_id):
         as_attachment=True,
         download_name=filename,
     )
+
+
+@bp.route("/activate", methods=["GET", "POST"])
+def activate():
+    from .models import Settings
+    s = Settings.query.filter_by(key="licensed").first()
+    if s and s.value == "1":
+        flash("Программа уже лицензирована", "info")
+        return redirect(url_for("main.index"))
+    if request.method == "POST":
+        from .license import activate_key
+        key = request.form.get("key", "").strip()
+        if key:
+            ok, msg = activate_key(key)
+            if ok:
+                flash(msg, "success")
+                return redirect(url_for("main.index"))
+            else:
+                flash(msg, "danger")
+        else:
+            flash("Введите ключ", "warning")
+    return render_template("activate.html")

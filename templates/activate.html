@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Активация{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="card-title mb-4">Активация программы</h3>
+                <p class="text-muted">Введите ключ лицензии для активации</p>
+                <form method="post">
+                    <div class="mb-3">
+                        <input type="text" class="form-control form-control-lg text-center"
+                               name="key" placeholder="XXXX-XXXX-XXXX-XXXX"
+                               autocomplete="off" autofocus required
+                               style="letter-spacing: 2px; font-size: 1.2rem;">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Активировать</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

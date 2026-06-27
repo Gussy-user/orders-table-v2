@@ -73,6 +73,7 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status_id = db.Column(db.Integer, db.ForeignKey("order_status.id"), nullable=False)
     archived = db.Column(db.Boolean, default=False)
+    payment_status = db.Column(db.String(30), nullable=False, default="Не оплачен")
 
     status = db.relationship("OrderStatus", backref="orders")
     items = db.relationship("OrderItem", backref="order", cascade="all, delete-orphan")
@@ -93,10 +94,14 @@ class OrderItem(db.Model):
     __tablename__ = "order_item"
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False)
+    part_id = db.Column(db.Integer, db.ForeignKey("part.id"), nullable=True)
     part_name = db.Column(db.String(120), nullable=False)
     article = db.Column(db.String(60), nullable=True)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     price = db.Column(db.Float, nullable=False, default=0)
+    item_status = db.Column(db.String(30), nullable=False, default="Ожидается")
+
+    part = db.relationship("Part", backref="order_items")
 
     @property
     def total(self):
@@ -160,3 +165,12 @@ class Settings(db.Model):
             s = Settings(key=key, value=value)
             db.session.add(s)
         db.session.commit()
+
+
+class License(db.Model):
+    __tablename__ = "license"
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(64), unique=True, nullable=False)
+    key_type = db.Column(db.String(20), nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    activated_at = db.Column(db.DateTime, nullable=True)

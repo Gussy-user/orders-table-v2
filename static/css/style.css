@@ -9,15 +9,27 @@ body {
 }
 
 /* Клиентские статусы */
-.status-client-in-work   { background-color: #0d6efd; }
-.status-client-done      { background-color: #198754; }
-.status-client-delay     { background-color: #dc3545; }
+.status-client-in-work   { background-color: #0d6efd; color: #fff; }
+.status-client-done      { background-color: #198754; color: #fff; }
+.status-client-delay     { background-color: #dc3545; color: #fff; }
 
 /* Заказы */
-.status-order-new        { background-color: #0d6efd; }
-.status-order-progress   { background-color: #ffc107; }
-.status-order-done       { background-color: #198754; }
-.status-order-cancel     { background-color: #dc3545; }
+.status-order-new        { background-color: #0d6efd; color: #fff; }
+.status-order-progress   { background-color: #ffc107; color: #000; }
+.status-order-done       { background-color: #198754; color: #fff; }
+.status-order-cancel     { background-color: #dc3545; color: #fff; }
+.status-order-задержка   { background-color: #fd7e14; color: #fff; }
+
+/* Статусы позиций заказа */
+.item-status-ожидается   { background-color: #ffc107; color: #000; }
+.item-status-в-наличии   { background-color: #0d6efd; color: #fff; }
+.item-status-установлена { background-color: #198754; color: #fff; }
+.item-status-отменена    { background-color: #dc3545; color: #fff; }
+
+/* Статус оплаты */
+.payment-не-оплачен      { background-color: #dc3545; color: #fff; }
+.payment-частично        { background-color: #ffc107; color: #000; }
+.payment-оплачен         { background-color: #198754; color: #fff; }
 
 /* Кликабельные артикулы */
 .article-link {

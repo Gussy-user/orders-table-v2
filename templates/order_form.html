@@ -5,7 +5,7 @@
 
 <form method="post">
     <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <label class="form-label" for="client_id">Клиент</label>
             <select class="form-select" id="client_id" name="client_id" required>
                 <option value="">— Выберите клиента —</option>
@@ -17,7 +17,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <label class="form-label" for="status_id">Статус заказа</label>
             <select class="form-select" id="status_id" name="status_id" required>
                 {% for st in statuses %}
@@ -26,30 +26,73 @@
                 {% endfor %}
             </select>
         </div>
+        <div class="col-md-4">
+            <label class="form-label" for="payment_status">Статус оплаты</label>
+            <select class="form-select" id="payment_status" name="payment_status">
+                {% for ps in ["Не оплачен", "Частично оплачен", "Оплачен"] %}
+                    <option value="{{ ps }}" {% if order and order.payment_status == ps %}selected{% endif %}>{{ ps }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <h5>Позиции заказа</h5>
     <table class="table table-sm" id="items-table">
         <thead class="table-light"><tr>
-            <th>Название детали</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th></th>
+            <th>Деталь со склада</th><th>Название</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th>Статус</th><th></th>
         </tr></thead>
         <tbody>
             {% if order and order.items %}
                 {% for item in order.items %}
                 <tr>
+                    <td>
+                        <select name="part_id" class="form-select form-select-sm part-select">
+                            <option value="">— Свободный ввод —</option>
+                            {% for p in parts %}
+                                <option value="{{ p.id }}" data-name="{{ p.name }}" data-article="{{ p.article|default('', true) }}" data-price="{{ p.price }}"
+                                    {% if item.part_id == p.id %}selected{% endif %}>
+                                    {{ p.name }} ({{ p.price }}₽)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td><input type="text" name="part_name" class="form-control" value="{{ item.part_name }}" required></td>
                     <td><input type="text" name="article" class="form-control" value="{{ item.article or '' }}" placeholder="Артикул"></td>
                     <td><input type="number" name="quantity" class="form-control" min="1" value="{{ item.quantity }}" required></td>
                     <td><input type="number" step="0.01" name="price" class="form-control" value="{{ item.price }}" required></td>
+                    <td>
+                        <select name="item_status" class="form-select form-select-sm">
+                            {% for s in ["Ожидается", "В наличии", "Установлена", "Отменена"] %}
+                                <option value="{{ s }}" {% if item.item_status == s %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td><button type="button" class="btn btn-sm btn-outline-danger remove-item">✖️</button></td>
                 </tr>
                 {% endfor %}
             {% else %}
                 <tr>
+                    <td>
+                        <select name="part_id" class="form-select form-select-sm part-select">
+                            <option value="">— Свободный ввод —</option>
+                            {% for p in parts %}
+                                <option value="{{ p.id }}" data-name="{{ p.name }}" data-article="{{ p.article|default('', true) }}" data-price="{{ p.price }}">
+                                    {{ p.name }} ({{ p.price }}₽)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td><input type="text" name="part_name" class="form-control" placeholder="Название детали" required></td>
                     <td><input type="text" name="article" class="form-control" placeholder="Артикул"></td>
                     <td><input type="number" name="quantity" class="form-control" min="1" value="1" required></td>
                     <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required></td>
+                    <td>
+                        <select name="item_status" class="form-select form-select-sm">
+                            {% for s in ["Ожидается", "В наличии", "Установлена", "Отменена"] %}
+                                <option value="{{ s }}">{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td><button type="button" class="btn btn-sm btn-outline-danger remove-item">✖️</button></td>
                 </tr>
             {% endif %}
@@ -73,13 +116,31 @@
         const tbody = document.querySelector('#items-table tbody');
         const row = `
         <tr>
+            <td>
+                <select name="part_id" class="form-select form-select-sm part-select">
+                    <option value="">— Свободный ввод —</option>
+                    {% for p in parts %}
+                        <option value="{{ p.id }}" data-name="{{ p.name }}" data-article="{{ p.article|default('', true) }}" data-price="{{ p.price }}">
+                            {{ p.name }} ({{ p.price }}₽)
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
             <td><input type="text" name="part_name" class="form-control" placeholder="Название детали" required></td>
             <td><input type="text" name="article" class="form-control" placeholder="Артикул"></td>
             <td><input type="number" name="quantity" class="form-control" min="1" value="1" required></td>
             <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required></td>
+            <td>
+                <select name="item_status" class="form-select form-select-sm">
+                    {% for s in ["Ожидается", "В наличии", "Установлена", "Отменена"] %}
+                        <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </td>
             <td><button type="button" class="btn btn-sm btn-outline-danger remove-item">✖️</button></td>
         </tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
+        bindPartSelects();
     });
 
     document.addEventListener('click', function (e) {
@@ -87,5 +148,24 @@
             e.target.closest('tr').remove();
         }
     });
+
+    function bindPartSelects() {
+        document.querySelectorAll('.part-select').forEach(function(sel) {
+            sel.removeEventListener('change', onPartChange);
+            sel.addEventListener('change', onPartChange);
+        });
+    }
+
+    function onPartChange() {
+        var row = this.closest('tr');
+        var opt = this.options[this.selectedIndex];
+        if (opt.value) {
+            row.querySelector('input[name="part_name"]').value = opt.dataset.name || '';
+            row.querySelector('input[name="article"]').value = opt.dataset.article || '';
+            row.querySelector('input[name="price"]').value = opt.dataset.price || '';
+        }
+    }
+
+    bindPartSelects();
 </script>
 {% endblock %}

@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, redirect, url_for, request
 from .extensions import db, migrate
 from .errors import register_error_handlers
 from .utils import data_path
@@ -45,6 +45,20 @@ def create_app():
             if not OrderStatus.query.filter_by(name=name).first():
                 db.session.add(OrderStatus(name=name))
         db.session.commit()
+
+    @app.before_request
+    def check_license():
+        from .models import Settings
+        if not request.endpoint:
+            return
+        if request.endpoint in ("main.activate", "static"):
+            return
+        try:
+            s = Settings.query.filter_by(key="licensed").first()
+            if not s or s.value != "1":
+                return redirect(url_for("main.activate"))
+        except Exception:
+            return redirect(url_for("main.activate"))
 
     from apscheduler.schedulers.background import BackgroundScheduler
     from .backup import cleanup_old_backups

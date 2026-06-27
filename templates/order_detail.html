@@ -13,6 +13,11 @@
             {{ order.status.name }}
         </span>
     </li>
+    <li class="list-group-item"><strong>Оплата:</strong>
+        <span class="badge status-badge payment-{{ order.payment_status|lower|replace(' ', '-') }}">
+            {{ order.payment_status }}
+        </span>
+    </li>
     <li class="list-group-item"><strong>Создан:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</li>
     <li class="list-group-item"><strong>Сумма:</strong> {{ order.total_price|round(2) }} ₽</li>
 </ul>
@@ -20,7 +25,7 @@
 <h4>Позиции заказа</h4>
 <table class="table table-sm align-middle">
     <thead class="table-light"><tr>
-        <th>#</th><th>Деталь</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th>Итого (₽)</th>
+        <th>#</th><th>Деталь</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th>Итого (₽)</th><th>Статус</th><th>Склад</th>
     </tr></thead>
     <tbody>
     {% for item in order.items %}
@@ -36,6 +41,16 @@
             <td>{{ item.quantity }}</td>
             <td>{{ item.price|round(2) }}</td>
             <td class="fw-bold">{{ item.total|round(2) }}</td>
+            <td>
+                <span class="badge status-badge item-status-{{ item.item_status|lower|replace(' ', '-') }}">
+                    {{ item.item_status }}
+                </span>
+            </td>
+            <td>
+                {% if item.part %}
+                    <small class="text-muted">{{ item.part.location }}</small>
+                {% else %}—{% endif %}
+            </td>
         </tr>
     {% endfor %}
     </tbody>
