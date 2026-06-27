@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Расчётный лист{% endblock %}
+{% block content %}
+<h2>Расчётный лист</h2>
+<div class="card mt-3">
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label" for="client_id">Клиент</label>
+                <select class="form-select" id="client_id" name="client_id" required>
+                    <option value="">-- Выберите клиента --</option>
+                    {% for c in clients %}
+                    <option value="{{ c.id }}">{{ c.name }} ({{ c.phone }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="order_id">Заказ (необязательно)</label>
+                <select class="form-select" id="order_id" name="order_id">
+                    <option value="">-- Все заказы клиента --</option>
+                </select>
+                <div class="form-text">Если не выбран — будет расчётный лист по всем заказам.</div>
+            </div>
+            <button type="submit" class="btn btn-info text-white">📄 Сформировать расчётный лист</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('client_id').addEventListener('change', function() {
+    var clientId = this.value;
+    var orderSelect = document.getElementById('order_id');
+    orderSelect.innerHTML = '<option value="">Загрузка...</option>';
+    if (!clientId) {
+        orderSelect.innerHTML = '<option value="">-- Все заказы клиента --</option>';
+        return;
+    }
+    fetch('/api/client/' + clientId + '/orders')
+        .then(function(r) { return r.json(); })
+        .then(function(orders) {
+            orderSelect.innerHTML = '<option value="">-- Все заказы клиента --</option>';
+            orders.forEach(function(o) {
+                var opt = document.createElement('option');
+                opt.value = o.id;
+                opt.textContent = o.order_number + ' — ' + o.status;
+                orderSelect.appendChild(opt);
+            });
+        });
+});
+</script>
+{% endblock %}

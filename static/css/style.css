@@ -30,3 +30,20 @@ body {
 .article-link:hover {
     color: #dc3545;
 }
+
+.quick-btn {
+    font-size: 1.25rem;
+    padding: 0.4rem 0.6rem !important;
+    color: rgba(255,255,255,0.85) !important;
+}
+.quick-btn:hover {
+    color: #fff !important;
+    transform: scale(1.15);
+}
+.quick-btn i {
+    vertical-align: middle;
+}
+
+body[data-scale] {
+    zoom: attr(data-scale);
+}

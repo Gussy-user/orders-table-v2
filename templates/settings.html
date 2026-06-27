@@ -17,16 +17,26 @@
                 <input type="text" class="form-control" id="shop_address" name="shop_address"
                        value="{{ shop_address }}" placeholder="г. Москва, ул. Примерная, д. 1">
             </div>
-            <div class="col-md-8">
-                <label class="form-label" for="backup_dir">Папка для бэкапов (CSV)</label>
+            <div class="col-md-6">
+                <label class="form-label" for="backup_dir">Папка для бэкапов</label>
                 <input type="text" class="form-control" id="backup_dir" name="backup_dir"
                        value="{{ backup_dir }}" placeholder="Оставьте пустым для папки программы">
                 <div class="form-text">
-                    Если пусто — CSV сохраняется рядом с программой.
-                    Укажите полный путь для сохранения в другую папку.
+                    Если пусто — бэкапы сохраняются рядом с программой.
                 </div>
             </div>
-            <div class="col-md-4 d-flex align-items-end">
+            <div class="col-md-6">
+                <label class="form-label" for="backup_retention_days">Хранить бэкапы (дней)</label>
+                <input type="number" class="form-control" id="backup_retention_days" name="backup_retention_days"
+                       value="{{ backup_retention_days }}" min="1" max="3650">
+                <div class="form-text">Автоматическое удаление бэкапов старше указанного срока.</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="ui_scale">Масштаб интерфейса: <span id="scale_val">{{ ui_scale }}%</span></label>
+                <input type="range" class="form-range" id="ui_scale" name="ui_scale"
+                       min="80" max="150" step="5" value="{{ ui_scale }}">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
                 <button type="submit" class="btn btn-success w-100">Сохранить</button>
             </div>
         </form>
@@ -49,4 +59,14 @@
         </form>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+var slider = document.getElementById('ui_scale');
+var label = document.getElementById('scale_val');
+slider.addEventListener('input', function() {
+    label.textContent = this.value + '%';
+    document.body.style.zoom = this.value + '%';
+});
+</script>
 {% endblock %}

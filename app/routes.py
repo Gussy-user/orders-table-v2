@@ -368,6 +368,8 @@ def settings_page():
         backup_dir = request.form.get("backup_dir", "").strip()
         employee = request.form.get("employee", "").strip()
         shop_address = request.form.get("shop_address", "").strip()
+        backup_retention_days = request.form.get("backup_retention_days", "90").strip()
+        ui_scale = request.form.get("ui_scale", "100").strip()
         try:
             if backup_dir and not __import__("os").path.isdir(backup_dir):
                 flash("Папка бэкапов не найдена — поле не сохранено. Укажите существующую папку.", "warning")
@@ -375,6 +377,8 @@ def settings_page():
                 Settings.set("backup_dir", backup_dir)
             Settings.set("employee", employee)
             Settings.set("shop_address", shop_address)
+            Settings.set("backup_retention_days", backup_retention_days)
+            Settings.set("ui_scale", ui_scale)
             db.session.commit()
             flash("Настройки сохранены", "success")
         except Exception as e:
@@ -386,6 +390,8 @@ def settings_page():
         backup_dir=Settings.get("backup_dir"),
         employee=Settings.get("employee"),
         shop_address=Settings.get("shop_address"),
+        backup_retention_days=Settings.get("backup_retention_days", "90"),
+        ui_scale=Settings.get("ui_scale", "100"),
     )
 
 
@@ -397,6 +403,33 @@ def export_csv_manual():
     else:
         flash("Не удалось экспортировать CSV. Проверьте папку бэкапов в настройках.", "danger")
     return redirect(request.referrer or url_for("main.index"))
+
+
+@bp.route("/invoice/select", methods=["GET", "POST"])
+def invoice_select():
+    if request.method == "POST":
+        client_id = request.form.get("client_id", type=int)
+        order_id = request.form.get("order_id", type=int)
+        if client_id:
+            url = url_for("main.client_invoice_pdf", client_id=client_id)
+            if order_id:
+                url += f"?order_id={order_id}"
+            return redirect(url)
+        flash("Выберите клиента", "warning")
+        return redirect(url_for("main.invoice_select"))
+
+    clients = Client.query.order_by(Client.name).all()
+    return render_template("invoice_select.html", clients=clients)
+
+
+@bp.route("/api/client/<int:client_id>/orders")
+def api_client_orders(client_id):
+    orders = Order.query.filter_by(client_id=client_id).order_by(Order.created_at.desc()).all()
+    return jsonify([{
+        "id": o.id,
+        "order_number": o.order_number,
+        "status": o.status.name if o.status else "",
+    } for o in orders])
 
 
 @bp.route("/client/<int:client_id>/invoice/pdf")

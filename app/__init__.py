@@ -33,7 +33,6 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        # Гарантируем наличие таблицы settings (если БД старая)
         from .models import Settings
         if not Settings.query.first():
             db.session.commit()
@@ -46,5 +45,12 @@ def create_app():
             if not OrderStatus.query.filter_by(name=name).first():
                 db.session.add(OrderStatus(name=name))
         db.session.commit()
+
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from .backup import cleanup_old_backups
+
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(cleanup_old_backups, "interval", hours=24, id="cleanup_backups")
+    scheduler.start()
 
     return app

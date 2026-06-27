@@ -47,7 +47,39 @@ def export_csv():
                     f"{item.price:.2f}",
                     f"{item.total:.2f}",
                     o.status.name if o.status else "",
-                    o.created_at.strftime("%d.%m.%Y %H:%M") if o.created_at else "",
+                    o.created_at.strftime("%d.%m.%y %H:%M") if o.created_at else "",
                 ])
 
     return filepath
+
+
+def cleanup_old_backups():
+    backup_dir = get_backup_dir()
+    if not os.path.isdir(backup_dir):
+        return
+
+    try:
+        retention_days = int(Settings.get("backup_retention_days", "90"))
+    except (ValueError, TypeError):
+        retention_days = 90
+
+    cutoff = datetime.datetime.now() - datetime.timedelta(days=retention_days)
+    deleted = 0
+
+    for filename in os.listdir(backup_dir):
+        if not filename.startswith("orders_"):
+            continue
+        if not (filename.endswith(".csv") or filename.endswith(".xlsx")):
+            continue
+        filepath = os.path.join(backup_dir, filename)
+        if not os.path.isfile(filepath):
+            continue
+        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(filepath))
+        if mtime < cutoff:
+            try:
+                os.remove(filepath)
+                deleted += 1
+            except OSError:
+                pass
+
+    return deleted
