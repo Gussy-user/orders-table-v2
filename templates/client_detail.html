@@ -35,7 +35,7 @@
                         <td>{{ car.make }}</td>
                         <td>{{ car.model }}</td>
                         <td>{{ car.vin }}</td>
-                        <td>{{ car.year|default('-') }}</td>
+                        <td>{{ car.year if car.year else '-' }}</td>
                         <td>
                             <a href="{{ url_for('main.car_edit', car_id=car.id) }}" class="btn btn-sm btn-outline-primary">✏️</a>
                             <form method="post" action="{{ url_for('main.car_delete', car_id=car.id) }}" style="display:inline;" onsubmit="return confirm('Удалить автомобиль?');">
