@@ -30,6 +30,7 @@ def part_add():
                 name=request.form["name"].strip(),
                 article=request.form.get("article", "").strip() or None,
                 price=float(request.form["price"]),
+                purchase_price=float(request.form.get("purchase_price", 0) or 0),
                 location=request.form.get("location", "На складе").strip(),
             )
             db.session.add(part)
@@ -50,6 +51,7 @@ def part_edit(part_id):
             part.name = request.form["name"].strip()
             part.article = request.form.get("article", "").strip() or None
             part.price = float(request.form["price"])
+            part.purchase_price = float(request.form.get("purchase_price", 0) or 0)
             part.location = request.form.get("location", "На складе").strip()
             db.session.commit()
             flash("Деталь обновлена", "success")

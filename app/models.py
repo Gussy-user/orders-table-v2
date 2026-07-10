@@ -63,6 +63,7 @@ class Part(db.Model):
     name = db.Column(db.String(120), nullable=False)
     article = db.Column(db.String(60), nullable=True)
     price = db.Column(db.Float, nullable=False)
+    purchase_price = db.Column(db.Float, nullable=True, default=0)
     location = db.Column(db.String(120), nullable=True, default="На складе")
 
     def __repr__(self):
