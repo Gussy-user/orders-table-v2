@@ -62,6 +62,7 @@ class Part(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     article = db.Column(db.String(60), nullable=True)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
     price = db.Column(db.Float, nullable=False)
     purchase_price = db.Column(db.Float, nullable=True, default=0)
     location = db.Column(db.String(120), nullable=True, default="На складе")

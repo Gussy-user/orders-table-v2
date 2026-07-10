@@ -9,10 +9,17 @@
         <input type="text" class="form-control" id="name" name="name"
                value="{{ part.name if part else '' }}" required>
     </div>
-    <div class="mb-3">
-        <label class="form-label" for="article">Артикул</label>
-        <input type="text" class="form-control" id="article" name="article"
-               value="{{ part.article if part and part.article else '' }}" placeholder="Артикул детали">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label" for="article">Артикул</label>
+            <input type="text" class="form-control" id="article" name="article"
+                   value="{{ part.article if part and part.article else '' }}" placeholder="Артикул детали">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="quantity">Количество</label>
+            <input type="number" min="0" class="form-control" id="quantity" name="quantity"
+                   value="{{ part.quantity if part else '0' }}" required>
+        </div>
     </div>
     <div class="row mb-3">
         <div class="col-md-6">

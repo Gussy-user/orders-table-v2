@@ -45,6 +45,10 @@ def create_app():
             with db.engine.connect() as conn:
                 conn.execute(db.text('ALTER TABLE part ADD COLUMN purchase_price FLOAT DEFAULT 0'))
                 conn.commit()
+        if 'quantity' not in columns:
+            with db.engine.connect() as conn:
+                conn.execute(db.text('ALTER TABLE part ADD COLUMN quantity INTEGER DEFAULT 0'))
+                conn.commit()
 
         # Add prepayment column to order table if it doesn't exist
         columns = [col['name'] for col in inspector.get_columns('order')]

@@ -406,6 +406,7 @@ def settings_page():
         shop_address = request.form.get("shop_address", "").strip()
         backup_retention_days = request.form.get("backup_retention_days", "90").strip()
         ui_scale = request.form.get("ui_scale", "100").strip()
+        auto_deduct = "1" if request.form.get("auto_deduct") else "0"
         try:
             if backup_dir and not __import__("os").path.isdir(backup_dir):
                 flash("Папка бэкапов не найдена — поле не сохранено. Укажите существующую папку.", "warning")
@@ -415,6 +416,7 @@ def settings_page():
             Settings.set("shop_address", shop_address)
             Settings.set("backup_retention_days", backup_retention_days)
             Settings.set("ui_scale", ui_scale)
+            Settings.set("auto_deduct", auto_deduct)
             db.session.commit()
             flash("Настройки сохранены", "success")
         except Exception as e:
@@ -428,6 +430,7 @@ def settings_page():
         shop_address=Settings.get("shop_address"),
         backup_retention_days=Settings.get("backup_retention_days", "90"),
         ui_scale=Settings.get("ui_scale", "100"),
+        auto_deduct=Settings.get("auto_deduct", "1") == "1",
     )
 
 

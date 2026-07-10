@@ -29,6 +29,7 @@ def part_add():
             part = Part(
                 name=request.form["name"].strip(),
                 article=request.form.get("article", "").strip() or None,
+                quantity=int(request.form.get("quantity", 0) or 0),
                 price=float(request.form["price"]),
                 purchase_price=float(request.form.get("purchase_price", 0) or 0),
                 location=request.form.get("location", "На складе").strip(),
@@ -50,6 +51,7 @@ def part_edit(part_id):
         try:
             part.name = request.form["name"].strip()
             part.article = request.form.get("article", "").strip() or None
+            part.quantity = int(request.form.get("quantity", 0) or 0)
             part.price = float(request.form["price"])
             part.purchase_price = float(request.form.get("purchase_price", 0) or 0)
             part.location = request.form.get("location", "На складе").strip()

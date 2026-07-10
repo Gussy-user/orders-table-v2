@@ -158,7 +158,27 @@ def order_status(order_id):
     status_id = int(request.form.get("status_id", 0))
     status = OrderStatus.query.get(status_id)
     if status:
+        old_status = order.status.name if order.status else ""
         order.status_id = status_id
+        db.session.flush()
+
+        # Автосписание товара со склада при выдаче
+        from .models import Settings, Part
+        auto_deduct = Settings.get("auto_deduct", "1") == "1"
+        if auto_deduct and status.name == "Выдан" and old_status != "Выдан":
+            warnings = []
+            for item in order.items:
+                if item.part_id:
+                    part = Part.query.get(item.part_id)
+                    if part:
+                        if part.quantity >= item.quantity:
+                            part.quantity -= item.quantity
+                        else:
+                            warnings.append(f"{part.name}: нужно {item.quantity}, есть {part.quantity}")
+                            part.quantity = 0
+            if warnings:
+                flash("Внимание: " + "; ".join(warnings), "warning")
+
         db.session.commit()
         export_csv()
         flash(f"Статус заказа №{order.order_number} изменён", "success")

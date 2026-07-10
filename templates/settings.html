@@ -50,6 +50,27 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Списание товаров</h5>
+        <form method="post" class="row g-3">
+            <div class="col-md-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="auto_deduct" name="auto_deduct" value="1"
+                           {% if auto_deduct %}checked{% endif %}>
+                    <label class="form-check-label" for="auto_deduct">
+                        Автоматическое списание товара со склада при выдаче заказа
+                    </label>
+                </div>
+                <div class="form-text">Товар будет списан со склада при смене статуса заказа на «Выдан».</div>
+            </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-success">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">Ручной экспорт CSV</h5>
