@@ -90,6 +90,21 @@ def _save_client(existing_client=None):
 
         db.session.flush()
 
+        # Создание автомобиля (если заполнены поля)
+        car_make = request.form.get("car_make", "").strip()
+        car_model = request.form.get("car_model", "").strip()
+        car_vin = request.form.get("car_vin", "").strip()
+        car_year = request.form.get("car_year", "").strip()
+        if car_make and car_vin:
+            car = Car(
+                client_id=client.id,
+                make=car_make,
+                model=car_model or "",
+                vin=car_vin,
+                year=int(car_year) if car_year else None,
+            )
+            db.session.add(car)
+
         for attr in Attribute.query.all():
             field_name = f"attr_{attr.id}"
             value = request.form.get(field_name, "").strip()
