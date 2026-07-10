@@ -78,6 +78,7 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status_id = db.Column(db.Integer, db.ForeignKey("order_status.id"), nullable=False)
     archived = db.Column(db.Boolean, default=False)
+    is_archived_manually = db.Column(db.Boolean, default=False)
     payment_status = db.Column(db.String(30), nullable=False, default="Не оплачен")
     prepayment = db.Column(db.Float, nullable=True, default=0)
 

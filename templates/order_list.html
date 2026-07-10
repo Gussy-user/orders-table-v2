@@ -59,6 +59,21 @@
             <td class="text-end {% if o.debt > 0 %}text-danger{% else %}text-success{% endif %}">{{ o.debt|round(2) }}</td>
             <td>{{ o.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
             <td>
+                {% if not archived %}
+                    {# Кнопка ручной архивации в активных заказах #}
+                    <form method="post" action="{{ url_for('orders.manual_archive', order_id=o.id) }}" style="display:inline;">
+                        <button class="btn btn-sm btn-outline-secondary" type="submit"
+                                title="Отправить в архив">📦</button>
+                    </form>
+                {% else %}
+                    {# Кнопка восстановления из архива (только для ручной архивации) #}
+                    {% if o.is_archived_manually %}
+                        <form method="post" action="{{ url_for('orders.manual_unarchive', order_id=o.id) }}" style="display:inline;">
+                            <button class="btn btn-sm btn-outline-success" type="submit"
+                                    title="Восстановить из архива">♻️</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
                 <form method="post" action="{{ url_for('orders.toggle_archive', order_id=o.id) }}" style="display:inline;">
                     <button class="btn btn-sm btn-outline-{% if not o.archived %}warning{% else %}success{% endif %}"
                             type="submit" title="{% if not o.archived %}В архив{% else %}В активные{% endif %}">

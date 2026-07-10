@@ -52,6 +52,10 @@ def create_app():
             with db.engine.connect() as conn:
                 conn.execute(db.text('ALTER TABLE "order" ADD COLUMN prepayment FLOAT DEFAULT 0'))
                 conn.commit()
+        if 'is_archived_manually' not in columns:
+            with db.engine.connect() as conn:
+                conn.execute(db.text('ALTER TABLE "order" ADD COLUMN is_archived_manually BOOLEAN DEFAULT 0'))
+                conn.commit()
 
         # Add messenger fields to client table if they don't exist
         columns = [col['name'] for col in inspector.get_columns('client')]

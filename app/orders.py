@@ -9,14 +9,19 @@ bp = Blueprint("orders", __name__, url_prefix="/orders")
 
 @bp.route("/")
 def orders_active():
-    orders = Order.query.filter_by(archived=False).order_by(Order.created_at.desc()).all()
+    orders = Order.query.filter(
+        Order.archived == False,
+        Order.is_archived_manually == False,
+    ).order_by(Order.created_at.desc()).all()
     statuses = OrderStatus.query.all()
     return render_template("order_list.html", orders=orders, archived=False, statuses=statuses)
 
 
 @bp.route("/archive")
 def orders_archive():
-    orders = Order.query.filter_by(archived=True).order_by(Order.created_at.desc()).all()
+    orders = Order.query.filter(
+        (Order.archived == True) | (Order.is_archived_manually == True)
+    ).order_by(Order.created_at.desc()).all()
     statuses = OrderStatus.query.all()
     return render_template("order_list.html", orders=orders, archived=True, statuses=statuses)
 
@@ -172,6 +177,34 @@ def toggle_archive(order_id):
         db.session.rollback()
         flash(f"Ошибка: {e}", "danger")
     return redirect(request.referrer or url_for("orders.orders_active"))
+
+
+@bp.route("/<int:order_id>/manual_archive", methods=["POST"])
+def manual_archive(order_id):
+    order = Order.query.get_or_404(order_id)
+    order.is_archived_manually = True
+    try:
+        db.session.commit()
+        export_csv()
+        flash(f"Заказ №{order.order_number} отправлен в архив", "info")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Ошибка: {e}", "danger")
+    return redirect(request.referrer or url_for("orders.orders_active"))
+
+
+@bp.route("/<int:order_id>/manual_unarchive", methods=["POST"])
+def manual_unarchive(order_id):
+    order = Order.query.get_or_404(order_id)
+    order.is_archived_manually = False
+    try:
+        db.session.commit()
+        export_csv()
+        flash(f"Заказ №{order.order_number} восстановлен из архива", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Ошибка: {e}", "danger")
+    return redirect(request.referrer or url_for("orders.orders_archive"))
 
 
 @bp.route("/<int:order_id>/delete", methods=["POST"])
