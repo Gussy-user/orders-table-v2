@@ -21,6 +21,8 @@ a = Analysis(
         'sqlalchemy.dialects.sqlite',
         'flask_migrate',
         'apscheduler',
+        'apscheduler.schedulers.background',
+        'apscheduler.triggers.interval',
         'webview',
     ],
     hookspath=[],

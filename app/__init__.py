@@ -33,8 +33,16 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-        from .models import Settings
+        from .models import Settings, License
         if not Settings.query.first():
+            db.session.commit()
+
+        # Seed hardcoded license keys if the license table is empty (fresh install)
+        if not License.query.first():
+            from .seed_keys import ONEPASS_HASHES, MASTER_HASH
+            for h in ONEPASS_HASHES:
+                db.session.add(License(key=h, key_type="onepass"))
+            db.session.add(License(key=MASTER_HASH, key_type="master"))
             db.session.commit()
 
         from .models import Status, OrderStatus
