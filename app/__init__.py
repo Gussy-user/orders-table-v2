@@ -33,6 +33,30 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+        # Add article column to part table if it doesn't exist
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('part')]
+        if 'article' not in columns:
+            with db.engine.connect() as conn:
+                conn.execute(db.text('ALTER TABLE part ADD COLUMN article VARCHAR(60)'))
+                conn.commit()
+
+        # Add prepayment column to order table if it doesn't exist
+        columns = [col['name'] for col in inspector.get_columns('order')]
+        if 'prepayment' not in columns:
+            with db.engine.connect() as conn:
+                conn.execute(db.text('ALTER TABLE "order" ADD COLUMN prepayment FLOAT DEFAULT 0'))
+                conn.commit()
+
+        # Add messenger fields to client table if they don't exist
+        columns = [col['name'] for col in inspector.get_columns('client')]
+        for col_name in ['telegram', 'whatsapp', 'max_account']:
+            if col_name not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(db.text(f'ALTER TABLE client ADD COLUMN {col_name} VARCHAR(120)'))
+                    conn.commit()
+
         from .models import Settings, License
         if not Settings.query.first():
             db.session.commit()

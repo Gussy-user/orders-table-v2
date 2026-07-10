@@ -19,13 +19,15 @@
         </span>
     </li>
     <li class="list-group-item"><strong>Создан:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</li>
-    <li class="list-group-item"><strong>Сумма:</strong> {{ order.total_price|round(2) }} ₽</li>
+    <li class="list-group-item"><strong>Сумма:</strong> {{ order.total_price|round(2) }} руб.</li>
+    <li class="list-group-item"><strong>Предоплата:</strong> {{ (order.prepayment or 0)|round(2) }} руб.</li>
+    <li class="list-group-item"><strong>Остаток долга:</strong> {{ order.debt|round(2) }} руб.</li>
 </ul>
 
 <h4>Позиции заказа</h4>
 <table class="table table-sm align-middle">
     <thead class="table-light"><tr>
-        <th>#</th><th>Деталь</th><th>Артикул</th><th>Кол-во</th><th>Цена (₽)</th><th>Итого (₽)</th><th>Статус</th><th>Склад</th>
+        <th>#</th><th>Деталь</th><th>Артикул</th><th>Кол-во</th><th>Цена (руб.)</th><th>Итого (руб.)</th><th>Статус</th><th>Склад</th>
     </tr></thead>
     <tbody>
     {% for item in order.items %}

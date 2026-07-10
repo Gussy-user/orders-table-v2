@@ -40,11 +40,14 @@ def order_add():
             similar = Order.query.filter(Order.order_number.like(f"{base}%")).count()
             order_number = f"{base}-{similar + 1:04d}"
 
+            prepayment = float(request.form.get("prepayment", 0) or 0)
+
             order = Order(
                 client_id=client_id,
                 status_id=status_id,
                 order_number=order_number,
                 payment_status=payment_status,
+                prepayment=prepayment,
             )
             db.session.add(order)
             db.session.flush()
@@ -100,6 +103,7 @@ def order_edit(order_id):
             order.client_id = int(request.form["client_id"])
             order.status_id = int(request.form["status_id"])
             order.payment_status = request.form.get("payment_status", order.payment_status)
+            order.prepayment = float(request.form.get("prepayment", 0) or 0)
 
             OrderItem.query.filter_by(order_id=order.id).delete()
 

@@ -7,6 +7,15 @@
     <div class="col-md-6">
         <ul class="list-group">
             <li class="list-group-item"><strong>Телефон:</strong> {{ client.phone }}</li>
+            {% if client.telegram %}
+                <li class="list-group-item"><strong>Telegram:</strong> {{ client.telegram }}</li>
+            {% endif %}
+            {% if client.whatsapp %}
+                <li class="list-group-item"><strong>WhatsApp:</strong> {{ client.whatsapp }}</li>
+            {% endif %}
+            {% if client.max_account %}
+                <li class="list-group-item"><strong>MAX:</strong> {{ client.max_account }}</li>
+            {% endif %}
             <li class="list-group-item"><strong>Статус:</strong>
                 <span class="badge status-badge status-client-{{ client.status.name|lower|replace(' ', '-') }}">
                     {{ client.status.name }}

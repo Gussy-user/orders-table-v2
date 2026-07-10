@@ -82,6 +82,12 @@ def _save_client(existing_client=None):
         client.name = name
         client.phone = phone
         client.status_id = status_id
+
+        # Мессенджеры — сохраняем только если чекбокс активен
+        client.telegram = request.form.get("telegram", "").strip() if request.form.get("tg_check") else None
+        client.whatsapp = request.form.get("whatsapp", "").strip() if request.form.get("wa_check") else None
+        client.max_account = request.form.get("max_account", "").strip() if request.form.get("max_check") else None
+
         db.session.flush()
 
         for attr in Attribute.query.all():

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from sqlalchemy import or_
 from .extensions import db
 from .models import Part
 
@@ -7,8 +8,18 @@ bp = Blueprint("warehouse", __name__, url_prefix="/warehouse")
 
 @bp.route("/")
 def parts_list():
-    parts = Part.query.order_by(Part.name).all()
-    return render_template("warehouse_list.html", parts=parts)
+    q = request.args.get("q", "").strip()
+    query = Part.query
+    if q:
+        query = query.filter(
+            or_(
+                Part.name.ilike(f"%{q}%"),
+                Part.article.ilike(f"%{q}%"),
+                Part.location.ilike(f"%{q}%"),
+            )
+        )
+    parts = query.order_by(Part.name).all()
+    return render_template("warehouse_list.html", parts=parts, q=q)
 
 
 @bp.route("/add", methods=["GET", "POST"])
@@ -17,6 +28,7 @@ def part_add():
         try:
             part = Part(
                 name=request.form["name"].strip(),
+                article=request.form.get("article", "").strip() or None,
                 price=float(request.form["price"]),
                 location=request.form.get("location", "На складе").strip(),
             )
@@ -36,6 +48,7 @@ def part_edit(part_id):
     if request.method == "POST":
         try:
             part.name = request.form["name"].strip()
+            part.article = request.form.get("article", "").strip() or None
             part.price = float(request.form["price"])
             part.location = request.form.get("location", "На складе").strip()
             db.session.commit()

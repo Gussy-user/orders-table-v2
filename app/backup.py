@@ -29,14 +29,17 @@ def export_csv():
 
     orders = Order.query.order_by(Order.created_at.desc()).all()
 
+    import csv
     with open(filepath, "w", newline="", encoding="utf-8-sig") as f:
-        writer = __import__("csv").writer(f, delimiter=";")
+        writer = csv.writer(f, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         writer.writerow([
             "Номер заказа", "Клиент", "Телефон", "Деталь", "Артикул",
-            "Кол-во", "Цена за шт.", "Сумма", "Статус", "Дата",
+            "Кол-во", "Цена за шт.", "Сумма", "Статус", "Предоплата",
+            "Остаток долга", "Дата",
         ])
         for o in orders:
             for item in o.items:
+                debt = round(item.total - (o.prepayment or 0), 2) if o.prepayment else round(item.total, 2)
                 writer.writerow([
                     o.order_number,
                     o.client.name if o.client else "",
@@ -47,6 +50,8 @@ def export_csv():
                     f"{item.price:.2f}",
                     f"{item.total:.2f}",
                     o.status.name if o.status else "",
+                    f"{o.prepayment:.2f}" if o.prepayment else "0.00",
+                    f"{debt:.2f}",
                     o.created_at.strftime("%d.%m.%y %H:%M") if o.created_at else "",
                 ])
 

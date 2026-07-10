@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul 2>&1
 echo === Orders Table - Windows ===
 echo.
 
@@ -15,6 +16,6 @@ echo Установка зависимостей...
 pip install -r requirements.txt
 echo.
 
-REM Запускаем
+REM Запускаем приложение (run.py сам откроет Chrome)
 echo Запуск приложения...
 python run.py

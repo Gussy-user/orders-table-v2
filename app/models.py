@@ -27,6 +27,9 @@ class Client(db.Model):
     phone = db.Column(db.String(30), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status_id = db.Column(db.Integer, db.ForeignKey("status.id"), nullable=False)
+    telegram = db.Column(db.String(120), nullable=True)
+    whatsapp = db.Column(db.String(120), nullable=True)
+    max_account = db.Column(db.String(120), nullable=True)
 
     status = db.relationship("Status", backref="clients")
     cars = db.relationship("Car", backref="owner", cascade="all, delete-orphan")
@@ -58,6 +61,7 @@ class Part(db.Model):
     __tablename__ = "part"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
+    article = db.Column(db.String(60), nullable=True)
     price = db.Column(db.Float, nullable=False)
     location = db.Column(db.String(120), nullable=True, default="На складе")
 
@@ -74,6 +78,7 @@ class Order(db.Model):
     status_id = db.Column(db.Integer, db.ForeignKey("order_status.id"), nullable=False)
     archived = db.Column(db.Boolean, default=False)
     payment_status = db.Column(db.String(30), nullable=False, default="Не оплачен")
+    prepayment = db.Column(db.Float, nullable=True, default=0)
 
     status = db.relationship("OrderStatus", backref="orders")
     items = db.relationship("OrderItem", backref="order", cascade="all, delete-orphan")
@@ -81,6 +86,10 @@ class Order(db.Model):
     @property
     def total_price(self) -> float:
         return sum(i.total for i in self.items)
+
+    @property
+    def debt(self) -> float:
+        return round(self.total_price - (self.prepayment or 0), 2)
 
     @property
     def status_css(self) -> str:

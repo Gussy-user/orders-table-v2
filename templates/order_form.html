@@ -36,6 +36,22 @@
         </div>
     </div>
 
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label class="form-label" for="prepayment">Внесенная предоплата (₽)</label>
+            <input type="number" step="0.01" min="0" class="form-control" id="prepayment" name="prepayment"
+                   value="{{ order.prepayment if order and order.prepayment else '0' }}" oninput="calcDebt()">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Итого цена продажи (₽)</label>
+            <input type="text" class="form-control" id="total-price" readonly value="0.00">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Остаток долга (₽)</label>
+            <input type="text" class="form-control" id="debt" readonly value="0.00">
+        </div>
+    </div>
+
     <h5>Позиции заказа</h5>
     <table class="table table-sm" id="items-table">
         <thead class="table-light"><tr>
@@ -58,8 +74,8 @@
                     </td>
                     <td><input type="text" name="part_name" class="form-control" value="{{ item.part_name }}" required></td>
                     <td><input type="text" name="article" class="form-control" value="{{ item.article or '' }}" placeholder="Артикул"></td>
-                    <td><input type="number" name="quantity" class="form-control" min="1" value="{{ item.quantity }}" required></td>
-                    <td><input type="number" step="0.01" name="price" class="form-control" value="{{ item.price }}" required></td>
+                    <td><input type="number" name="quantity" class="form-control" min="1" value="{{ item.quantity }}" required oninput="calcDebt()"></td>
+                    <td><input type="number" step="0.01" name="price" class="form-control" value="{{ item.price }}" required oninput="calcDebt()"></td>
                     <td>
                         <select name="item_status" class="form-select form-select-sm">
                             {% for s in ["Ожидается", "В наличии", "Установлена", "Отменена"] %}
@@ -84,8 +100,8 @@
                     </td>
                     <td><input type="text" name="part_name" class="form-control" placeholder="Название детали" required></td>
                     <td><input type="text" name="article" class="form-control" placeholder="Артикул"></td>
-                    <td><input type="number" name="quantity" class="form-control" min="1" value="1" required></td>
-                    <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required></td>
+                    <td><input type="number" name="quantity" class="form-control" min="1" value="1" required oninput="calcDebt()"></td>
+                    <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required oninput="calcDebt()"></td>
                     <td>
                         <select name="item_status" class="form-select form-select-sm">
                             {% for s in ["Ожидается", "В наличии", "Установлена", "Отменена"] %}
@@ -112,6 +128,19 @@
 
 {% block scripts %}
 <script>
+    function calcDebt() {
+        var rows = document.querySelectorAll('#items-table tbody tr');
+        var total = 0;
+        rows.forEach(function(row) {
+            var qty = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+            var price = parseFloat(row.querySelector('input[name="price"]').value) || 0;
+            total += qty * price;
+        });
+        var prepayment = parseFloat(document.getElementById('prepayment').value) || 0;
+        document.getElementById('total-price').value = total.toFixed(2);
+        document.getElementById('debt').value = (total - prepayment).toFixed(2);
+    }
+
     document.getElementById('add-item').addEventListener('click', function () {
         const tbody = document.querySelector('#items-table tbody');
         const row = `
@@ -128,8 +157,8 @@
             </td>
             <td><input type="text" name="part_name" class="form-control" placeholder="Название детали" required></td>
             <td><input type="text" name="article" class="form-control" placeholder="Артикул"></td>
-            <td><input type="number" name="quantity" class="form-control" min="1" value="1" required></td>
-            <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required></td>
+            <td><input type="number" name="quantity" class="form-control" min="1" value="1" required oninput="calcDebt()"></td>
+            <td><input type="number" step="0.01" name="price" class="form-control" placeholder="Цена" min="0" required oninput="calcDebt()"></td>
             <td>
                 <select name="item_status" class="form-select form-select-sm">
                     {% for s in ["Ожидается", "В наличии", "Установлена", "Отменена"] %}
@@ -146,6 +175,7 @@
     document.addEventListener('click', function (e) {
         if (e.target && e.target.classList.contains('remove-item')) {
             e.target.closest('tr').remove();
+            calcDebt();
         }
     });
 
@@ -164,8 +194,10 @@
             row.querySelector('input[name="article"]').value = opt.dataset.article || '';
             row.querySelector('input[name="price"]').value = opt.dataset.price || '';
         }
+        calcDebt();
     }
 
     bindPartSelects();
+    calcDebt();
 </script>
 {% endblock %}

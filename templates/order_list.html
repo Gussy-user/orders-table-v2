@@ -20,7 +20,7 @@
 
 <table class="table table-hover table-sm align-middle">
     <thead class="table-light"><tr>
-        <th>#</th><th>Номер</th><th>Клиент</th><th>Детали</th><th>Статус</th><th>Оплата</th><th>Сумма (₽)</th><th>Дата</th><th>Действия</th>
+        <th>#</th><th>Номер</th><th>Клиент</th><th>Детали</th><th>Статус</th><th>Оплата</th><th>Сумма (₽)</th><th>Долг (₽)</th><th>Дата</th><th>Действия</th>
     </tr></thead>
     <tbody>
     {% for o in orders %}
@@ -56,6 +56,7 @@
                 </span>
             </td>
             <td class="fw-bold text-end">{{ o.total_price|round(2) }}</td>
+            <td class="text-end {% if o.debt > 0 %}text-danger{% else %}text-success{% endif %}">{{ o.debt|round(2) }}</td>
             <td>{{ o.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
             <td>
                 <form method="post" action="{{ url_for('orders.toggle_archive', order_id=o.id) }}" style="display:inline;">
@@ -73,7 +74,7 @@
             </td>
         </tr>
     {% else %}
-        <tr><td colspan="9" class="text-center"><em>Заказов нет.</em></td></tr>
+        <tr><td colspan="10" class="text-center"><em>Заказов нет.</em></td></tr>
     {% endfor %}
     </tbody>
 </table>

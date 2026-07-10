@@ -19,7 +19,7 @@
 
 <table class="table table-hover table-sm align-middle">
     <thead class="table-light"><tr>
-        <th>#</th><th>ФИО</th><th>Телефон</th><th>Статус</th><th>Сумма (₽)</th><th>Дата</th><th>Действия</th>
+        <th>#</th><th>ФИО</th><th>Телефон</th><th>Автомобиль</th><th>VIN</th><th>Дата</th><th>Действия</th>
     </tr></thead>
     <tbody>
     {% for client in clients %}
@@ -28,11 +28,20 @@
             <td><a href="{{ url_for('main.client_detail', client_id=client.id) }}">{{ client.name }}</a></td>
             <td>{{ client.phone }}</td>
             <td>
-                <span class="badge status-badge status-client-{{ client.status.name|lower|replace(' ', '-') }}">
-                    {{ client.status.name }}
-                </span>
+                {% if client.cars %}
+                    {% set car = client.cars[0] %}
+                    {{ car.make }} {{ car.model }}{% if car.year %} ({{ car.year }}){% endif %}
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
             </td>
-            <td class="fw-bold text-end">{{ client.total_price|round(2) }}</td>
+            <td>
+                {% if client.cars %}
+                    <code>{{ client.cars[0].vin }}</code>
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
+            </td>
             <td>{{ client.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
             <td>
                 <a href="{{ url_for('main.client_detail', client_id=client.id) }}"

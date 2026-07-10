@@ -31,6 +31,46 @@
         </select>
     </div>
 
+    <h5>Мессенджеры и соцсети</h5>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="tg_check" name="tg_check"
+                       {% if client and client.telegram %}checked{% endif %}
+                       onchange="document.getElementById('telegram').disabled = !this.checked">
+                <label class="form-check-label" for="tg_check">Telegram</label>
+            </div>
+            <input type="text" class="form-control" id="telegram" name="telegram"
+                   value="{{ client.telegram if client else '' }}"
+                   placeholder="@username или номер"
+                   {% if not client or not client.telegram %}disabled{% endif %}>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="wa_check" name="wa_check"
+                       {% if client and client.whatsapp %}checked{% endif %}
+                       onchange="document.getElementById('whatsapp').disabled = !this.checked">
+                <label class="form-check-label" for="wa_check">WhatsApp</label>
+            </div>
+            <input type="text" class="form-control" id="whatsapp" name="whatsapp"
+                   value="{{ client.whatsapp if client else '' }}"
+                   placeholder="Номер телефона"
+                   {% if not client or not client.whatsapp %}disabled{% endif %}>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="max_check" name="max_check"
+                       {% if client and client.max_account %}checked{% endif %}
+                       onchange="document.getElementById('max_account').disabled = !this.checked">
+                <label class="form-check-label" for="max_check">MAX</label>
+            </div>
+            <input type="text" class="form-control" id="max_account" name="max_account"
+                   value="{{ client.max_account if client else '' }}"
+                   placeholder="Никнейм или номер"
+                   {% if not client or not client.max_account %}disabled{% endif %}>
+        </div>
+    </div>
+
     <h5>Дополнительные атрибуты</h5>
     {% if attributes %}
         {% for attr in attributes %}

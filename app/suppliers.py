@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from sqlalchemy import or_
 from .extensions import db
 from .models import Supplier
 
@@ -7,8 +8,19 @@ suppliers_bp = Blueprint("suppliers", __name__, url_prefix="/suppliers")
 
 @suppliers_bp.route("/")
 def list_suppliers():
-    suppliers = Supplier.query.order_by(Supplier.name).all()
-    return render_template("supplier_list.html", suppliers=suppliers)
+    q = request.args.get("q", "").strip()
+    query = Supplier.query
+    if q:
+        query = query.filter(
+            or_(
+                Supplier.name.ilike(f"%{q}%"),
+                Supplier.org_number.ilike(f"%{q}%"),
+                Supplier.address.ilike(f"%{q}%"),
+                Supplier.phone.ilike(f"%{q}%"),
+            )
+        )
+    suppliers = query.order_by(Supplier.name).all()
+    return render_template("supplier_list.html", suppliers=suppliers, q=q)
 
 
 @suppliers_bp.route("/add", methods=["GET", "POST"])

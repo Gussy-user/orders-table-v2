@@ -3,7 +3,19 @@
 {% block content %}
 <h2>Поставщики</h2>
 
-<a href="{{ url_for('suppliers.add_supplier') }}" class="btn btn-success mb-3">+ Добавить поставщика</a>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="get" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Поиск по названию, ИНН, адресу, телефону..."
+                   value="{{ q or '' }}">
+            <button type="submit" class="btn btn-outline-primary">Найти</button>
+            {% if q %}<a href="{{ url_for('suppliers.list_suppliers') }}" class="btn btn-outline-secondary ms-2">Сбросить</a>{% endif %}
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('suppliers.add_supplier') }}" class="btn btn-success">+ Добавить поставщика</a>
+    </div>
+</div>
 
 <table class="table table-hover table-sm align-middle">
     <thead class="table-light"><tr>
