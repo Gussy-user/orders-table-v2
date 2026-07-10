@@ -23,7 +23,6 @@ a = Analysis(
         'apscheduler',
         'apscheduler.schedulers.background',
         'apscheduler.triggers.interval',
-        'webview',
     ],
     hookspath=[],
     hooksconfig={},
