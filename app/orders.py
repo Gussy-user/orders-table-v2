@@ -79,6 +79,20 @@ def order_add():
                 )
                 db.session.add(item)
 
+            # Сохранение атрибутов заказа
+            from .models import Attribute, OrderAttribute
+            for attr in Attribute.query.filter_by(entity_type="order").all():
+                value = request.form.get(f"oattr_{attr.id}", "").strip()
+                oa = OrderAttribute.query.filter_by(order_id=order.id, attribute_id=attr.id).first()
+                if value:
+                    if oa:
+                        oa.value = value
+                    else:
+                        db.session.add(OrderAttribute(order_id=order.id, attribute_id=attr.id, value=value))
+                else:
+                    if oa:
+                        db.session.delete(oa)
+
             db.session.commit()
             export_csv()
             flash(f"Заказ №{order_number} создан", "success")
@@ -92,10 +106,13 @@ def order_add():
     statuses = OrderStatus.query.all()
     parts = Part.query.order_by(Part.name).all()
     client_id = request.args.get("client_id", type=int)
+    from .models import Attribute, OrderAttribute
+    order_attributes = Attribute.query.filter_by(entity_type="order").all()
     return render_template(
         "order_form.html",
         clients=clients, statuses=statuses, parts=parts,
         preselected_client_id=client_id, order=None,
+        order_attributes=order_attributes, order_attrs={},
     )
 
 
@@ -134,6 +151,20 @@ def order_edit(order_id):
                 )
                 db.session.add(item)
 
+            # Сохранение атрибутов заказа
+            from .models import Attribute, OrderAttribute
+            for attr in Attribute.query.filter_by(entity_type="order").all():
+                value = request.form.get(f"oattr_{attr.id}", "").strip()
+                oa = OrderAttribute.query.filter_by(order_id=order.id, attribute_id=attr.id).first()
+                if value:
+                    if oa:
+                        oa.value = value
+                    else:
+                        db.session.add(OrderAttribute(order_id=order.id, attribute_id=attr.id, value=value))
+                else:
+                    if oa:
+                        db.session.delete(oa)
+
             db.session.commit()
             export_csv()
             flash(f"Заказ №{order.order_number} обновлён", "success")
@@ -145,10 +176,14 @@ def order_edit(order_id):
     clients = Client.query.all()
     statuses = OrderStatus.query.all()
     parts = Part.query.order_by(Part.name).all()
+    from .models import Attribute, OrderAttribute
+    order_attributes = Attribute.query.filter_by(entity_type="order").all()
+    order_attrs = {oa.attribute_id: oa.value for oa in order.attributes}
     return render_template(
         "order_form.html",
         clients=clients, statuses=statuses, parts=parts,
         order=order, preselected_client_id=order.client_id,
+        order_attributes=order_attributes, order_attrs=order_attrs,
     )
 
 

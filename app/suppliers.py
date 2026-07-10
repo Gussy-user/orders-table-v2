@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy import or_
 from .extensions import db
-from .models import Supplier
+from .models import Supplier, Attribute, SupplierAttribute
 
 suppliers_bp = Blueprint("suppliers", __name__, url_prefix="/suppliers")
 
@@ -35,13 +35,23 @@ def add_supplier():
                 phone=request.form.get("phone", "").strip(),
             )
             db.session.add(supplier)
+            db.session.flush()
+
+            # Сохранение атрибутов поставщика
+            for attr in Attribute.query.filter_by(entity_type="supplier").all():
+                value = request.form.get(f"supattr_{attr.id}", "").strip()
+                if value:
+                    db.session.add(SupplierAttribute(supplier_id=supplier.id, attribute_id=attr.id, value=value))
+
             db.session.commit()
             flash("Поставщик добавлен", "success")
             return redirect(url_for("suppliers.list_suppliers"))
         except Exception as e:
             db.session.rollback()
             flash(f"Ошибка: {e}", "danger")
-    return render_template("supplier_form.html", supplier=None)
+
+    supplier_attributes = Attribute.query.filter_by(entity_type="supplier").all()
+    return render_template("supplier_form.html", supplier=None, supplier_attributes=supplier_attributes, supplier_attrs={})
 
 
 @suppliers_bp.route("/<int:supplier_id>/edit", methods=["GET", "POST"])
@@ -54,13 +64,24 @@ def edit_supplier(supplier_id):
             supplier.address = request.form.get("address", "").strip()
             supplier.work_time = request.form.get("work_time", "").strip()
             supplier.phone = request.form.get("phone", "").strip()
+
+            # Сохранение атрибутов поставщика
+            SupplierAttribute.query.filter_by(supplier_id=supplier.id).delete()
+            for attr in Attribute.query.filter_by(entity_type="supplier").all():
+                value = request.form.get(f"supattr_{attr.id}", "").strip()
+                if value:
+                    db.session.add(SupplierAttribute(supplier_id=supplier.id, attribute_id=attr.id, value=value))
+
             db.session.commit()
             flash("Поставщик обновлён", "success")
             return redirect(url_for("suppliers.list_suppliers"))
         except Exception as e:
             db.session.rollback()
             flash(f"Ошибка: {e}", "danger")
-    return render_template("supplier_form.html", supplier=supplier)
+
+    supplier_attributes = Attribute.query.filter_by(entity_type="supplier").all()
+    supplier_attrs = {sa.attribute_id: sa.value for sa in supplier.attributes}
+    return render_template("supplier_form.html", supplier=supplier, supplier_attributes=supplier_attributes, supplier_attrs=supplier_attrs)
 
 
 @suppliers_bp.route("/<int:supplier_id>/delete", methods=["POST"])

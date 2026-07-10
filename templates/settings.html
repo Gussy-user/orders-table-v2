@@ -65,6 +65,16 @@
                 <div class="form-text">Товар будет списан со склада при смене статуса заказа на «Выдан».</div>
             </div>
             <div class="col-md-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="block_insufficient_stock" name="block_insufficient_stock" value="1"
+                           {% if block_insufficient_stock %}checked{% endif %}>
+                    <label class="form-check-label" for="block_insufficient_stock">
+                        Блокировка заказа при отсутствии товара на складе
+                    </label>
+                </div>
+                <div class="form-text">При добавлении товара с недостаточным остатком будет выведено предупреждение.</div>
+            </div>
+            <div class="col-md-12">
                 <button type="submit" class="btn btn-success">Сохранить</button>
             </div>
         </form>

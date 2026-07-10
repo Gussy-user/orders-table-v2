@@ -30,6 +30,20 @@
         <input type="tel" class="form-control" id="phone" name="phone"
                value="{{ supplier.phone if supplier and supplier.phone else '' }}">
     </div>
+
+    {% if supplier_attributes %}
+    <h5>Дополнительные атрибуты</h5>
+    <div class="row mb-3">
+        {% for attr in supplier_attributes %}
+            <div class="col-md-4 mb-2">
+                <label class="form-label" for="supattr_{{ attr.id }}">{{ attr.name }}</label>
+                <input type="text" class="form-control" id="supattr_{{ attr.id }}" name="supattr_{{ attr.id }}"
+                       value="{{ supplier_attrs.get(attr.id, '') }}">
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <button type="submit" class="btn btn-success">
         {% if supplier %}Сохранить{% else %}Добавить{% endif %}
     </button>

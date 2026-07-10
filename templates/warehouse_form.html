@@ -38,6 +38,20 @@
         <input type="text" class="form-control" id="location" name="location"
                value="{{ part.location if part else 'На складе' }}">
     </div>
+
+    {% if stock_attributes %}
+    <h5>Дополнительные атрибуты</h5>
+    <div class="row mb-3">
+        {% for attr in stock_attributes %}
+            <div class="col-md-4 mb-2">
+                <label class="form-label" for="sattr_{{ attr.id }}">{{ attr.name }}</label>
+                <input type="text" class="form-control" id="sattr_{{ attr.id }}" name="sattr_{{ attr.id }}"
+                       value="{{ stock_attrs.get(attr.id, '') }}">
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <button type="submit" class="btn btn-success">Сохранить</button>
     <a href="{{ url_for('warehouse.parts_list') }}" class="btn btn-secondary">Отмена</a>
 </form>
