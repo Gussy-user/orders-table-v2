@@ -66,6 +66,7 @@ class Part(db.Model):
     price = db.Column(db.Float, nullable=False)
     purchase_price = db.Column(db.Float, nullable=True, default=0)
     location = db.Column(db.String(120), nullable=True, default="На складе")
+    attributes = db.relationship("PartAttribute", backref="part", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Part {self.name} @ {self.price}>"
@@ -85,6 +86,7 @@ class Order(db.Model):
 
     status = db.relationship("OrderStatus", backref="orders")
     items = db.relationship("OrderItem", backref="order", cascade="all, delete-orphan")
+    attributes = db.relationship("OrderAttribute", backref="order", cascade="all, delete-orphan")
 
     @property
     def total_price(self) -> float:
@@ -126,8 +128,12 @@ class OrderItem(db.Model):
 class Attribute(db.Model):
     __tablename__ = "attribute"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    entity_type = db.Column(db.String(20), nullable=False, default="client")
     values = db.relationship("ClientAttribute", backref="attribute", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Attribute {self.name} ({self.entity_type})>"
 
     def __repr__(self):
         return f"<Attribute {self.name}>"
@@ -144,6 +150,39 @@ class ClientAttribute(db.Model):
         return f"<ClientAttribute client={self.client_id} attr={self.attribute_id} value={self.value}>"
 
 
+class OrderAttribute(db.Model):
+    __tablename__ = "order_attribute"
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False)
+    attribute_id = db.Column(db.Integer, db.ForeignKey("attribute.id"), nullable=False)
+    value = db.Column(db.String(255), nullable=True)
+
+    def __repr__(self):
+        return f"<OrderAttribute order={self.order_id} attr={self.attribute_id} value={self.value}>"
+
+
+class PartAttribute(db.Model):
+    __tablename__ = "part_attribute"
+    id = db.Column(db.Integer, primary_key=True)
+    part_id = db.Column(db.Integer, db.ForeignKey("part.id"), nullable=False)
+    attribute_id = db.Column(db.Integer, db.ForeignKey("attribute.id"), nullable=False)
+    value = db.Column(db.String(255), nullable=True)
+
+    def __repr__(self):
+        return f"<PartAttribute part={self.part_id} attr={self.attribute_id} value={self.value}>"
+
+
+class SupplierAttribute(db.Model):
+    __tablename__ = "supplier_attribute"
+    id = db.Column(db.Integer, primary_key=True)
+    supplier_id = db.Column(db.Integer, db.ForeignKey("supplier.id"), nullable=False)
+    attribute_id = db.Column(db.Integer, db.ForeignKey("attribute.id"), nullable=False)
+    value = db.Column(db.String(255), nullable=True)
+
+    def __repr__(self):
+        return f"<SupplierAttribute supplier={self.supplier_id} attr={self.attribute_id} value={self.value}>"
+
+
 class Supplier(db.Model):
     __tablename__ = "supplier"
     id = db.Column(db.Integer, primary_key=True)
@@ -152,6 +191,7 @@ class Supplier(db.Model):
     address = db.Column(db.String(255), nullable=True)
     work_time = db.Column(db.String(120), nullable=True)
     phone = db.Column(db.String(30), nullable=True)
+    attributes = db.relationship("SupplierAttribute", backref="supplier", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Supplier {self.name}>"

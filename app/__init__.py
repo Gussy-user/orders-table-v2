@@ -69,6 +69,15 @@ def create_app():
                     conn.execute(db.text(f'ALTER TABLE client ADD COLUMN {col_name} VARCHAR(120)'))
                     conn.commit()
 
+        # Add entity_type to attribute table if it doesn't exist
+        tables = inspector.get_table_names()
+        if 'attribute' in tables:
+            columns = [col['name'] for col in inspector.get_columns('attribute')]
+            if 'entity_type' not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(db.text("ALTER TABLE attribute ADD COLUMN entity_type VARCHAR(20) DEFAULT 'client'"))
+                    conn.commit()
+
         from .models import Settings, License
         if not Settings.query.first():
             db.session.commit()

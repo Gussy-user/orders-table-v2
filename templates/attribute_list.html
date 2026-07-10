@@ -4,12 +4,21 @@
 <h2>Атрибуты</h2>
 
 <table class="table table-sm table-hover align-middle">
-    <thead class="table-light"><tr><th>ID</th><th>Название</th><th>Действия</th></tr></thead>
+    <thead class="table-light"><tr><th>ID</th><th>Название</th><th>Тип (сущность)</th><th>Действия</th></tr></thead>
     <tbody>
     {% for attr in attributes %}
         <tr>
             <td>{{ attr.id }}</td>
             <td>{{ attr.name }}</td>
+            <td>
+                <span class="badge bg-secondary">
+                    {% if attr.entity_type == 'client' %}Клиент
+                    {% elif attr.entity_type == 'order' %}Заказ
+                    {% elif attr.entity_type == 'stock' %}Детали (склад)
+                    {% elif attr.entity_type == 'supplier' %}Поставщики
+                    {% else %}{{ attr.entity_type }}{% endif %}
+                </span>
+            </td>
             <td>
                 <form method="post" action="{{ url_for('main.attribute_list') }}" class="d-inline" style="margin:0;">
                     <input type="hidden" name="action" value="rename">
@@ -36,6 +45,14 @@
     <input type="hidden" name="action" value="add">
     <div class="col-auto">
         <input type="text" class="form-control" name="name" placeholder="Название атрибута" required>
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="entity_type" required>
+            <option value="client">Клиент</option>
+            <option value="order">Заказ</option>
+            <option value="stock">Детали (склад)</option>
+            <option value="supplier">Поставщики</option>
+        </select>
     </div>
     <div class="col-auto">
         <button type="submit" class="btn btn-success">Добавить</button>

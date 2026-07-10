@@ -45,7 +45,7 @@ def index():
 def client_add():
     if request.method == "POST":
         return _save_client()
-    attributes = Attribute.query.all()
+    attributes = Attribute.query.filter_by(entity_type="client").all()
     statuses = Status.query.all()
     return render_template("client_form.html", client=None, attributes=attributes,
                            statuses=statuses, client_attrs={})
@@ -56,7 +56,7 @@ def client_edit(client_id):
     client = Client.query.get_or_404(client_id)
     if request.method == "POST":
         return _save_client(client)
-    attributes = Attribute.query.all()
+    attributes = Attribute.query.filter_by(entity_type="client").all()
     statuses = Status.query.all()
     client_attrs = {ca.attribute_id: ca.value for ca in client.attributes}
     return render_template("client_form.html", client=client, attributes=attributes,
@@ -144,7 +144,7 @@ def client_delete(client_id):
 @bp.route("/client/<int:client_id>")
 def client_detail(client_id):
     client = Client.query.get_or_404(client_id)
-    attributes = Attribute.query.all()
+    attributes = Attribute.query.filter_by(entity_type="client").all()
     client_attrs = {ca.attribute_id: ca.value for ca in client.attributes}
     return render_template("client_detail.html", client=client, attributes=attributes,
                            client_attrs=client_attrs)
@@ -318,11 +318,12 @@ def attribute_list():
         try:
             if action == "add":
                 name = request.form["name"].strip()
+                entity_type = request.form.get("entity_type", "client")
                 if not name:
                     raise ValueError("Имя атрибута обязательно")
-                if Attribute.query.filter_by(name=name).first():
+                if Attribute.query.filter_by(name=name, entity_type=entity_type).first():
                     raise ValueError("Атрибут уже существует")
-                db.session.add(Attribute(name=name))
+                db.session.add(Attribute(name=name, entity_type=entity_type))
                 db.session.commit()
                 flash(f"Атрибут «{name}» добавлен", "success")
             elif action == "rename":
