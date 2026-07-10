@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-4">
             <label class="form-label" for="payment_status">Статус оплаты</label>
-            <select class="form-select" id="payment_status" name="payment_status">
+            <select class="form-select" id="payment_status" name="payment_status" onchange="togglePrepayment()">
                 {% for ps in ["Не оплачен", "Частично оплачен", "Оплачен"] %}
                     <option value="{{ ps }}" {% if order and order.payment_status == ps %}selected{% endif %}>{{ ps }}</option>
                 {% endfor %}
@@ -38,16 +38,16 @@
 
     <div class="row mb-3">
         <div class="col-md-4">
+            <label class="form-label">Итого цена продажи (₽)</label>
+            <input type="text" class="form-control" id="total-price" readonly value="0.00">
+        </div>
+        <div class="col-md-4" id="prepayment-block" style="display: none;">
             <label class="form-label" for="prepayment">Внесенная предоплата (₽)</label>
             <input type="number" step="0.01" min="0" class="form-control" id="prepayment" name="prepayment"
                    value="{{ order.prepayment if order and order.prepayment else '0' }}" oninput="calcDebt()">
         </div>
         <div class="col-md-4">
-            <label class="form-label">Итого цена продажи (₽)</label>
-            <input type="text" class="form-control" id="total-price" readonly value="0.00">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Остаток долга (₽)</label>
+            <label class="form-label">Сумма долга (₽)</label>
             <input type="text" class="form-control" id="debt" readonly value="0.00">
         </div>
     </div>
@@ -128,6 +128,18 @@
 
 {% block scripts %}
 <script>
+    function togglePrepayment() {
+        var status = document.getElementById('payment_status').value;
+        var block = document.getElementById('prepayment-block');
+        if (status === 'Частично оплачен') {
+            block.style.display = 'block';
+        } else {
+            block.style.display = 'none';
+            document.getElementById('prepayment').value = '0';
+        }
+        calcDebt();
+    }
+
     function calcDebt() {
         var rows = document.querySelectorAll('#items-table tbody tr');
         var total = 0;
@@ -136,9 +148,18 @@
             var price = parseFloat(row.querySelector('input[name="price"]').value) || 0;
             total += qty * price;
         });
+        var status = document.getElementById('payment_status').value;
         var prepayment = parseFloat(document.getElementById('prepayment').value) || 0;
+        var debt = 0;
+        if (status === 'Не оплачен') {
+            debt = total;
+        } else if (status === 'Частично оплачен') {
+            debt = total - prepayment;
+        } else {
+            debt = 0;
+        }
         document.getElementById('total-price').value = total.toFixed(2);
-        document.getElementById('debt').value = (total - prepayment).toFixed(2);
+        document.getElementById('debt').value = debt.toFixed(2);
     }
 
     document.getElementById('add-item').addEventListener('click', function () {
@@ -198,6 +219,7 @@
     }
 
     bindPartSelects();
+    togglePrepayment();
     calcDebt();
 </script>
 {% endblock %}
