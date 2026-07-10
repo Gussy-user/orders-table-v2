@@ -339,6 +339,10 @@ def attribute_list():
                 attr_id = int(request.form["attr_id"])
                 attr = Attribute.query.get_or_404(attr_id)
                 ClientAttribute.query.filter_by(attribute_id=attr.id).delete()
+                from .models import OrderAttribute, PartAttribute, SupplierAttribute
+                OrderAttribute.query.filter_by(attribute_id=attr.id).delete()
+                PartAttribute.query.filter_by(attribute_id=attr.id).delete()
+                SupplierAttribute.query.filter_by(attribute_id=attr.id).delete()
                 db.session.delete(attr)
                 db.session.commit()
                 flash("Атрибут удалён", "info")
