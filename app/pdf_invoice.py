@@ -168,19 +168,23 @@ def generate_invoice_pdf(client, order=None, employee="", shop_address=""):
     else:
         elements.append(Paragraph("Заказов пока нет.", normal_style))
 
-    # === Подписи (одна строка, жирный) ===
+    # === Подписи (одна строка, жирный, с линиями) ===
     elements.append(Spacer(1, 15 * mm))
-    sig_bold_style = ParagraphStyle(
-        "RuSigBold", parent=styles["Normal"],
+    sig_style = ParagraphStyle(
+        "RuSig", parent=styles["Normal"],
+        fontName=font, fontSize=10, leading=14,
+    )
+    sig_line_style = ParagraphStyle(
+        "RuSigLine", parent=styles["Normal"],
         fontName=font, fontSize=10, leading=14,
     )
     sig_data = [[
-        Paragraph("<b>_________________ (ФИО) &nbsp;&nbsp; Подпись: __________</b>", sig_bold_style),
-        Paragraph("<b>_________________ (ФИО) &nbsp;&nbsp; Подпись: __________</b>", sig_bold_style),
+        Paragraph("<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> (ФИО) &nbsp;&nbsp; <b>Подпись:</b> __________", sig_style),
+        Paragraph("<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u> (ФИО) &nbsp;&nbsp; <b>Подпись:</b> __________", sig_style),
     ]]
     sig_table = Table(sig_data, colWidths=[80 * mm, 80 * mm])
     sig_table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
         ("ALIGN", (0, 0), (0, 0), "LEFT"),
         ("ALIGN", (1, 0), (1, 0), "RIGHT"),
     ]))
