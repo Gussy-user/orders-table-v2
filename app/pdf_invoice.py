@@ -168,15 +168,23 @@ def generate_invoice_pdf(client, order=None, employee="", shop_address=""):
     else:
         elements.append(Paragraph("Заказов пока нет.", normal_style))
 
-    # === Подписи ===
+    # === Подписи (одна строка, жирный) ===
     elements.append(Spacer(1, 15 * mm))
-    sig_style = ParagraphStyle(
-        "RuSig", parent=styles["Normal"],
+    sig_bold_style = ParagraphStyle(
+        "RuSigBold", parent=styles["Normal"],
         fontName=font, fontSize=10, leading=14,
     )
-    elements.append(Paragraph("_________________ (ФИО)        Подпись: __________", sig_style))
-    elements.append(Spacer(1, 10 * mm))
-    elements.append(Paragraph("_________________ (ФИО)        Подпись: __________", sig_style))
+    sig_data = [[
+        Paragraph("<b>_________________ (ФИО) &nbsp;&nbsp; Подпись: __________</b>", sig_bold_style),
+        Paragraph("<b>_________________ (ФИО) &nbsp;&nbsp; Подпись: __________</b>", sig_bold_style),
+    ]]
+    sig_table = Table(sig_data, colWidths=[80 * mm, 80 * mm])
+    sig_table.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ALIGN", (0, 0), (0, 0), "LEFT"),
+        ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+    ]))
+    elements.append(sig_table)
 
     # === Подвал ===
     elements.append(Spacer(1, 10 * mm))
