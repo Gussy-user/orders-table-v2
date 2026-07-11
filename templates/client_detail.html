@@ -109,5 +109,12 @@
 <hr>
 <a href="{{ url_for('main.client_edit', client_id=client.id) }}" class="btn btn-primary">Редактировать клиента</a>
 <a href="{{ url_for('main.client_add') }}" class="btn btn-success">Новый клиент</a>
+{% set ns = namespace(has_active=false) %}
+{% for o in client.orders %}{% if not o.archived %}{% set ns.has_active = true %}{% endif %}{% endfor %}
+{% if ns.has_active %}
 <a href="{{ url_for('main.client_invoice_pdf', client_id=client.id) }}" class="btn btn-info text-white" target="_blank">📄 Скачать расчётный лист (PDF)</a>
+{% else %}
+<button class="btn btn-info text-white" disabled title="У клиента нет активных заказов">📄 Скачать расчётный лист (PDF)</button>
+<small class="text-muted ms-2">Нет активных заказов</small>
+{% endif %}
 {% endblock %}

@@ -78,6 +78,53 @@ def create_app():
                     conn.execute(db.text("ALTER TABLE attribute ADD COLUMN entity_type VARCHAR(20) DEFAULT 'client'"))
                     conn.commit()
 
+        # Create stock_history table if it doesn't exist
+        if 'stock_history' not in tables:
+            with db.engine.connect() as conn:
+                conn.execute(db.text("""
+                    CREATE TABLE stock_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        product_id INTEGER REFERENCES part(id) ON DELETE SET NULL,
+                        product_name VARCHAR(120) NOT NULL DEFAULT '',
+                        operation_type VARCHAR(20) NOT NULL,
+                        quantity_change INTEGER NOT NULL,
+                        details TEXT,
+                        order_id INTEGER REFERENCES "order"(id),
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                conn.commit()
+        else:
+            sh_columns = [col['name'] for col in inspector.get_columns('stock_history')]
+            if 'product_name' not in sh_columns:
+                with db.engine.connect() as conn:
+                    conn.execute(db.text("ALTER TABLE stock_history ADD COLUMN product_name VARCHAR(120) NOT NULL DEFAULT ''"))
+                    conn.commit()
+            if 'details' not in sh_columns:
+                with db.engine.connect() as conn:
+                    conn.execute(db.text("ALTER TABLE stock_history ADD COLUMN details TEXT"))
+                    conn.commit()
+            # Recreate table with proper FK constraint
+            with db.engine.connect() as conn:
+                fk_info = conn.execute(db.text("SELECT sql FROM sqlite_master WHERE type='table' AND name='stock_history'")).fetchone()
+                if fk_info and 'ON DELETE SET NULL' not in fk_info[0]:
+                    conn.execute(db.text("ALTER TABLE stock_history RENAME TO stock_history_old"))
+                    conn.execute(db.text("""
+                        CREATE TABLE stock_history (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            product_id INTEGER REFERENCES part(id) ON DELETE SET NULL,
+                            product_name VARCHAR(120) NOT NULL DEFAULT '',
+                            operation_type VARCHAR(20) NOT NULL,
+                            quantity_change INTEGER NOT NULL,
+                            details TEXT,
+                            order_id INTEGER REFERENCES "order"(id),
+                            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+                    conn.execute(db.text("INSERT INTO stock_history (id, product_id, product_name, operation_type, quantity_change, details, order_id, created_at) SELECT id, product_id, COALESCE(product_name, ''), operation_type, quantity_change, details, order_id, created_at FROM stock_history_old"))
+                    conn.execute(db.text("DROP TABLE stock_history_old"))
+                    conn.commit()
+
         from .models import Settings, License
         if not Settings.query.first():
             db.session.commit()

@@ -198,21 +198,28 @@ def order_status(order_id):
         db.session.flush()
 
         # Автосписание товара со склада при выдаче
-        from .models import Settings, Part
+        from .models import Settings, Part, log_stock_operation
         auto_deduct = Settings.get("auto_deduct", "1") == "1"
+        block_insufficient = Settings.get("block_insufficient_stock", "1") == "1"
         if auto_deduct and status.name == "Выдан" and old_status != "Выдан":
-            warnings = []
+            errors = []
+            for item in order.items:
+                if item.part_id:
+                    part = Part.query.get(item.part_id)
+                    if part and part.quantity < item.quantity:
+                        errors.append(f"{part.name}: нужно {item.quantity}, есть {part.quantity}")
+            if errors and block_insufficient:
+                db.session.rollback()
+                flash("Выдача запрещена: " + "; ".join(errors), "danger")
+                return redirect(request.referrer or url_for("orders.orders_active"))
             for item in order.items:
                 if item.part_id:
                     part = Part.query.get(item.part_id)
                     if part:
-                        if part.quantity >= item.quantity:
-                            part.quantity -= item.quantity
-                        else:
-                            warnings.append(f"{part.name}: нужно {item.quantity}, есть {part.quantity}")
-                            part.quantity = 0
-            if warnings:
-                flash("Внимание: " + "; ".join(warnings), "warning")
+                        part.quantity -= item.quantity
+                        log_stock_operation(part.id, part.name, "SALE", -item.quantity, order.id)
+            if errors:
+                flash("Внимание: " + "; ".join(errors), "warning")
 
         db.session.commit()
         export_csv()

@@ -458,6 +458,14 @@ def invoice_select():
         client_id = request.form.get("client_id", type=int)
         order_id = request.form.get("order_id", type=int)
         if client_id:
+            # Проверка: есть ли активные заказы у клиента
+            if not order_id:
+                client = Client.query.get(client_id)
+                if client:
+                    active = [o for o in client.orders if not o.archived]
+                    if not active:
+                        flash("У клиента нет активных заказов, сначала добавьте новый заказ.", "warning")
+                        return redirect(url_for("main.invoice_select"))
             url = url_for("main.client_invoice_pdf", client_id=client_id)
             if order_id:
                 url += f"?order_id={order_id}"
@@ -487,6 +495,13 @@ def client_invoice_pdf(client_id):
     client = Client.query.get_or_404(client_id)
     order_id = request.args.get("order_id", type=int)
     order = Order.query.get(order_id) if order_id else None
+
+    # Проверка: есть ли активные заказы
+    if order is None:
+        active = [o for o in client.orders if not o.archived]
+        if not active:
+            flash("У клиента нет активных заказов, сначала добавьте новый заказ.", "warning")
+            return redirect(url_for("main.client_detail", client_id=client.id))
 
     employee = Settings.get("employee")
     shop_address = Settings.get("shop_address")

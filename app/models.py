@@ -219,6 +219,33 @@ class Settings(db.Model):
         db.session.commit()
 
 
+class StockHistory(db.Model):
+    __tablename__ = "stock_history"
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("part.id", ondelete="SET NULL"), nullable=True)
+    product_name = db.Column(db.String(120), nullable=False, default="")
+    operation_type = db.Column(db.String(20), nullable=False)
+    quantity_change = db.Column(db.Integer, nullable=False)
+    details = db.Column(db.Text, nullable=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    product = db.relationship("Part", backref="stock_history")
+    order = db.relationship("Order", backref="stock_history_records")
+
+
+def log_stock_operation(product_id: int, product_name: str, operation_type: str, quantity_change: int, order_id: int = None, details: str = None):
+    entry = StockHistory(
+        product_id=product_id,
+        product_name=product_name,
+        operation_type=operation_type,
+        quantity_change=quantity_change,
+        details=details,
+        order_id=order_id,
+    )
+    db.session.add(entry)
+
+
 class License(db.Model):
     __tablename__ = "license"
     id = db.Column(db.Integer, primary_key=True)

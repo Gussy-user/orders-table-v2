@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}История склада{% endblock %}
+{% block content %}
+<h2>История операций со складом</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="q" class="form-control" placeholder="Поиск по названию..." value="{{ q }}">
+    </div>
+    <div class="col-md-2">
+        <select name="type" class="form-select">
+            <option value="">Все операции</option>
+            <option value="ADD" {{ 'selected' if op_type == 'ADD' }}>Пополнение</option>
+            <option value="SALE" {{ 'selected' if op_type == 'SALE' }}>Продажа</option>
+            <option value="WRITE_OFF" {{ 'selected' if op_type == 'WRITE_OFF' }}>Списание</option>
+            <option value="EDIT" {{ 'selected' if op_type == 'EDIT' }}>Редактирование</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="date_from" class="form-control" value="{{ date_from }}" title="С даты">
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="date_to" class="form-control" value="{{ date_to }}" title="По дату">
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-outline-primary">Фильтровать</button>
+        {% if q or op_type or date_from or date_to %}
+            <a href="{{ url_for('warehouse.stock_history') }}" class="btn btn-outline-secondary">Сбросить</a>
+        {% endif %}
+    </div>
+</form>
+
+<table class="table table-hover table-sm align-middle">
+    <thead class="table-light"><tr>
+        <th>Дата</th>
+        <th>Товар</th>
+        <th>Операция</th>
+        <th>Изменение</th>
+        <th>Заказ</th>
+    </tr></thead>
+    <tbody>
+    {% for r in records %}
+        <tr>
+            <td>{{ r.created_at.strftime('%d.%m.%Y %H:%M') if r.created_at else '—' }}</td>
+            <td>
+                {% if r.product %}
+                    <a href="{{ url_for('warehouse.part_edit', part_id=r.product_id) }}">{{ r.product_name }}</a>
+                {% else %}
+                    <span class="text-muted">{{ r.product_name }} (удалён)</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if r.operation_type == 'ADD' %}
+                    <span class="badge bg-success">Пополнение</span>
+                {% elif r.operation_type == 'SALE' %}
+                    <span class="badge bg-primary">Продажа</span>
+                {% elif r.operation_type == 'WRITE_OFF' %}
+                    <span class="badge bg-danger">Списание</span>
+                {% elif r.operation_type == 'EDIT' %}
+                    <span class="badge bg-warning text-dark">Редактирование</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ r.operation_type }}</span>
+                {% endif %}
+            </td>
+            <td class="{% if r.quantity_change > 0 %}text-success{% elif r.quantity_change < 0 %}text-danger{% endif %}">
+                {% if r.operation_type == 'EDIT' %}
+                    <small class="text-muted">{{ r.details or '—' }}</small>
+                {% else %}
+                    {{ '+' if r.quantity_change > 0 else '' }}{{ r.quantity_change }}
+                {% endif %}
+            </td>
+            <td>
+                {% if r.order %}
+                    <a href="{{ url_for('orders.order_edit', order_id=r.order.id) }}">№{{ r.order.order_number }}</a>
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5" class="text-muted">Нет записей.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
